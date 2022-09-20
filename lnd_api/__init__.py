@@ -37,15 +37,20 @@ class LND_api():
     def __str__(self) -> str:
         return self.alias
     
-    def routing_all(self):
+    def routing_all(self)->tuple:
+        content = self.routing_all_get_all_as_dict()
+        return content,self.__get_sum_from_response(content)
+    
+    def routing_all_get_all_as_dict(self)->dict:
         data = { 
                 'start_time': "0",  
                 'num_max_events': 50000, 
         }
         content = self.__switch(data)
-        self.__get_sum_from_response(content["forwarding_events"])
-        return content,self.__get_sum_from_response(content["forwarding_events"])
-    def routing_yesterday(self):
+        content = self.__generate_aliases_for_channels(content["forwarding_events"])
+        return content
+    
+    def routing_yesterday_get_all_as_dict(self)->dict:
         yesterday_start = date.today() - timedelta(days = 1)
         yesterday_start = time.mktime(yesterday_start.timetuple())
         yesterday_stop = yesterday_start + (60*60*24)
@@ -55,8 +60,12 @@ class LND_api():
                 'num_max_events': 50000, 
         }
         response = self.__switch(data)
+        return response["forwarding_events"]
+    def routing_yesterday(self)->tuple:
+
         #print(json.dumps(),indent=3)
-        return self.__generate_aliases_for_channels(response["forwarding_events"]),self.__get_sum_from_response(response["forwarding_events"])
+        response = self.routing_yesterday_get_all_as_dict()
+        return self.__generate_aliases_for_channels(response),self.__get_sum_from_response(response)
     def __get_sum_from_response(self,data_list:list)->tuple:
         if len(data_list) == 0:
             return {
@@ -96,16 +105,19 @@ class LND_api():
             if response["chan_id_in"] in hash_mapa.keys():
                 chan_alias_in = hash_mapa[response["chan_id_in"]]
             else:
-                chan_alias_in = self.__get_nodes_in_channel(response["chan_id_in"])
+                chan_alias_in,channel_capacity,public_key_in = self.__get_nodes_in_channel(response["chan_id_in"])
                 hash_mapa[response["chan_id_in"]] = chan_alias_in
             
             if response["chan_id_out"] in hash_mapa.keys():
                 chan_alias_out= hash_mapa[response["chan_id_out"]]
             else:
-                chan_alias_out = self.__get_nodes_in_channel(response["chan_id_out"])
+                chan_alias_out,channel_capacity,public_key_out = self.__get_nodes_in_channel(response["chan_id_out"])
                 hash_mapa[response["chan_id_out"]] = chan_alias_out
             response["chan_in_alias"] = chan_alias_in
             response["chan_out_alias"] = chan_alias_out
+            response["channel_capacity"] = channel_capacity
+            response["public_key_out"] = public_key_out
+            response["public_key_in"] = public_key_in
             result_list.append(response)
         return result_list
     def __get_nodes_in_channel(self,chan_id:str)->tuple:
@@ -117,19 +129,24 @@ class LND_api():
         )
         #print(str(json.dumps(r.json(),indent=3)))
         response = r.json()
-        if response["node1_pub"] == self.pub_key:
-            node_to_resolver_allias = response["node2_pub"]
+        if r.status_code == 200:
+            ## alias and other info found
+            if response["node1_pub"] == self.pub_key:
+                node_to_resolver_allias = response["node2_pub"]
+            else:
+                node_to_resolver_allias = response["node1_pub"]
+            url = self.base_url + "/v1/graph/node/" + node_to_resolver_allias
+            r = requests.get(
+                url,
+                headers=self.headers,
+                verify=self.cert_path
+            )
+            response = r.json()
+            #print(json.dumps(response,indent=2))
+            return response["node"]["alias"],response["total_capacity"],response["node"]["pub_key"]
         else:
-            node_to_resolver_allias = response["node1_pub"]
-        url = self.base_url + "/v1/graph/node/" + node_to_resolver_allias
-        r = requests.get(
-            url,
-            headers=self.headers,
-            verify=self.cert_path
-        )
-        response = r.json()
-        return response["node"]["alias"]
-
+            ## node not found (neznal jsem ale rip nějakému uzlu)
+            return None,None,None
     def __get_channels_status_count(self)->None:
         url = self.base_url + "/v1/channels"
         response = requests.get(

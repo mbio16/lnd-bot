@@ -17,8 +17,9 @@ def main():
         config["POSTGRES_PASSWORD"],
         config["POSTGRES_HOST"],
     )
-    logger = Logger(config["LOG_FILE"],db,loggin_level=config["LOG_LEVEL"])
+    logger = Logger(config["LOG_FILE"], db, loggin_level=config["LOG_LEVEL"])
     logger.info("First message")
+    logger.error("First error")
 
 
 #     api = LND_api(

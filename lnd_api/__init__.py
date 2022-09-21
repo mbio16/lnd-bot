@@ -7,7 +7,7 @@ import time
 class LND_api:
     def __init__(
         self, base_url: str, macaroon: str, cert_path: str, validate_cert: bool
-    )->None:
+    ) -> None:
         self.base_url = base_url
         self.macaroon = macaroon
         self.cert_path = cert_path
@@ -18,7 +18,7 @@ class LND_api:
             self.cert_path = False
         self.__get_basic_info()
 
-    def __get_basic_info(self)-> None:
+    def __get_basic_info(self) -> None:
         urlInfo = self.base_url + "/v1/getinfo"
         r = requests.get(urlInfo, headers=self.headers, verify=self.cert_path)
         content = r.json()

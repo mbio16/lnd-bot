@@ -60,3 +60,17 @@ class DB:
         )
         self.cursor.execute(query, values)
         self.conn.commit()
+
+    def write_log(self, level: str, message: str) -> bool:
+        try:
+            query = """INSERT INTO public.logs 
+                            (log_type, log_timestamp, message) 
+                        VALUES
+                            ((SELECT id FROM log_type WHERE type=%s), now(),%s);"""
+            values = (level, message)
+            self.cursor.execute(query, values)
+            self.conn.commit()
+            return True
+        except Exception as e:
+            print(str(e))
+            return False

@@ -12,7 +12,10 @@ def main():
     config = dotenv_values(".env")
 
     api = LND_api(
-        config["URL"], config["MACAROON"], None, config["VERIFY_CERT"] == "True"
+        config["URL"],
+        config["MACAROON"],
+        config["CERT_PATH"],
+        config["VERIFY_CERT"] == "True",
     )
     signal = Signal_client(
         config["SIGNAL_SOURCE_NUMBER"],

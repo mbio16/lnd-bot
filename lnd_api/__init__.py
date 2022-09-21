@@ -56,7 +56,8 @@ class LND_api:
             "num_max_events": 50000,
         }
         response = self.__switch(data)
-        return response["forwarding_events"]
+        content = self.__generate_aliases_for_channels(response["forwarding_events"])
+        return content
 
     def routing_yesterday(self) -> tuple:
 

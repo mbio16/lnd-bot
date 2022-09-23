@@ -18,13 +18,18 @@ def main():
         config["POSTGRES_HOST"],
     )
     logger = Logger(config["LOG_FILE"], db, loggin_level=config["LOG_LEVEL"])
-    logger.info("First message")
-    logger.error("First error")
+    time = db.get_youngest_unixtimestamp_routing_tx()
 
+    api = LND_api(
+        config["URL"],
+        config["MACAROON"],
+        config["CERT_PATH"],
+        config["VERIFY_CERT"] == "True",
+    )
 
-#     api = LND_api(
-#         config["URL"], config["MACAROON"], None, config["VERIFY_CERT"] == "True"
-#     )
+    routing_txs = api.routing_since_time_as_dict(time)
+    db.write_tx_to_db(routing_txs)
+
 #     signal = Signal_client(
 #         config["SIGNAL_SOURCE_NUMBER"],
 #         config["SIGNAL_RECIPIENTS"],

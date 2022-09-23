@@ -59,6 +59,15 @@ class LND_api:
         content = self.__generate_aliases_for_channels(response["forwarding_events"])
         return content
 
+    def routing_since_time_as_dict(self,start_time_unix:int) -> dict:
+        data = {
+            "start_time": str(start_time_unix+1)
+        }
+        content = self.__switch(data)
+        content = self.__generate_aliases_for_channels(content["forwarding_events"])
+        print(str(content))
+        return content
+
     def routing_yesterday(self) -> tuple:
 
         # print(json.dumps(),indent=3)

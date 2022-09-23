@@ -13,6 +13,7 @@ class DB:
         )
         self.cursor = self.conn.cursor()  # creating a cursor
 
+    
     def write_tx_to_db(self, content_list: list) -> None:
         for item in content_list:
             # print(str(item) + "\n")
@@ -74,3 +75,15 @@ class DB:
         except Exception as e:
             print(str(e))
             return False
+    def get_youngest_unixtimestamp_routing_tx(self)->int:
+        query = """
+                SELECT unix_timestamp FROM routing
+                ORDER BY unix_timestamp DESC
+                LIMIT 1;
+        """
+        self.cursor.execute(query, None)
+        res = self.cursor.fetchone()[0]
+        if res is None:
+            return int(0)
+        else:
+            return int(res.timestamp())

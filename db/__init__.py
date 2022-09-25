@@ -1,7 +1,7 @@
 import psycopg2
 import json
 from datetime import datetime
-from logger import Logger
+#from logger import Logger
 
 class DB:
     def __init__(
@@ -14,7 +14,7 @@ class DB:
         self.cursor = self.conn.cursor()  # creating a cursor
 
     
-    def write_tx_to_db(self, content_list: list,logger:Logger) -> None:
+    def write_tx_to_db(self, content_list: list,logger) -> None:
         logger.info("Start writting channels to DB.")
         for item in content_list:
             self.__check_channel_in_db(
@@ -27,8 +27,9 @@ class DB:
             logger.info("Start writing Txs to DB.")
             self.__write_routing_tx(item,logger)
             logger.info("Written TXs to DB.")
+        logger.info("Done writting channels to DB.")
     def __check_channel_in_db(
-        self, channel_id: int, public_key: str, alias: str,logger:Logger
+        self, channel_id: int, public_key: str, alias: str,logger
     ) -> None:
         # print(channel_id)
         self.cursor.execute(
@@ -45,7 +46,7 @@ class DB:
             self.conn.commit()
         logger.info("Channel written to DB.")
 
-    def __write_routing_tx(self, content: dict,logger:Logger) -> None:
+    def __write_routing_tx(self, content: dict,logger) -> None:
         query = """
         INSERT INTO public.routing 
         (unix_timestamp, chan_id_in, chan_id_out, amount_in_sats, amount_out_sats, fee_sats, fee_milisats, amt_in_milisats, amount_out_milisats)

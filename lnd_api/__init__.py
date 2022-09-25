@@ -1,27 +1,33 @@
 import base64, codecs, json, requests
+from turtle import color
 from datetime import date, datetime
 from datetime import timedelta
+from logger import Logger
 import time
 
 
 class LND_api:
     def __init__(
-        self, base_url: str, macaroon: str, cert_path: str, validate_cert: bool
+        self, base_url: str, macaroon: str, cert_path: str, validate_cert: bool, logger: Logger
     ) -> None:
         self.base_url = base_url
         self.macaroon = macaroon
         self.cert_path = cert_path
         self.validate_cert = validate_cert
         self.headers = headers = {"Grpc-Metadata-macaroon": self.macaroon}
-
+        self.logger = logger
         if validate_cert == False:
             self.cert_path = False
         self.__get_basic_info()
 
     def __get_basic_info(self) -> None:
         urlInfo = self.base_url + "/v1/getinfo"
-        r = requests.get(urlInfo, headers=self.headers, verify=self.cert_path)
-        content = r.json()
+        self.logger.info("Sending basic info.")
+        try:
+            r = requests.get(urlInfo, headers=self.headers, verify=self.cert_path)
+            content = r.json()
+        except Exception as e:
+            self.logger.error("Error when sending basic info: {}".format(str(e)))
         self.alias = content["alias"]
         self.color = content["color"]
         self.pub_key = content["identity_pubkey"]
@@ -29,24 +35,39 @@ class LND_api:
         self.num_active_channels = None
         self.num_inactive_channels = None
         self.__get_channels_status_count()
-
+        self.logger.info("Basic info parsed.")
+        self.logger.debug(
+            "Alias: {}, Color: {}, Pubkey: {}, Block_height: {}".format(
+                self.alias,
+                self.color,
+                self.pub_key,
+                self.height
+                )
+            )
     def __str__(self) -> str:
         return self.alias
 
     def routing_all(self) -> tuple:
+        self.logger.info("Sending request routing all.")
         content = self.routing_all_get_all_as_dict()
         return content, self.__get_sum_from_response(content)
 
     def routing_all_get_all_as_dict(self) -> dict:
+        self.logger.info("Sending message about routing since beggining.")
         data = {
             "start_time": "0",
             "num_max_events": 50000,
         }
         content = self.__switch(data)
+        self.logger.debug("Response for routing message: {}".format(json.dumps(content,indent=1)))
+        self.logger.info("Parsed message from routing.")
         content = self.__generate_aliases_for_channels(content["forwarding_events"])
+        self.logger.info("Parsed from aliases.")
+        self.logger.debug("Response for routing message with aliases: {}".format(json.dumps(content,indent=1)))
         return content
 
     def routing_yesterday_get_all_as_dict(self) -> dict:
+        self.logger.info("Sending message for yesterdays routing.")
         yesterday_start = date.today() - timedelta(days=1)
         yesterday_start = time.mktime(yesterday_start.timetuple())
         yesterday_stop = yesterday_start + (60 * 60 * 24)
@@ -55,22 +76,29 @@ class LND_api:
             "end_time": str(int(yesterday_stop)),
             "num_max_events": 50000,
         }
+        self.logger.debug("Data in requests: {}".format(json.dumps(data,indent=1)))
         response = self.__switch(data)
+        self.logger.info("Parsed message from routing.")
+        self.logger.debug("Response for routing message: {}".format(json.dumps(response,indent=1)))
         content = self.__generate_aliases_for_channels(response["forwarding_events"])
+        self.logger.info("Parsed from aliases.")
+        self.logger.debug("Response for routing message with aliases: {}".format(json.dumps(content,indent=1)))
         return content
 
     def routing_since_time_as_dict(self,start_time_unix:int) -> dict:
         data = {
             "start_time": str(start_time_unix+1)
         }
+        self.logger.debug("Data in requests: {}".format(json.dumps(data,indent=1)))
+        self.logger.info("Sending request to node.")
         content = self.__switch(data)
+        self.logger.info("Parsing requests from node.")
+        self.logger.debug("Parsing request from node: {}".format(json.dumps(content,indent=1)))
         content = self.__generate_aliases_for_channels(content["forwarding_events"])
-        print(str(content))
+        self.logger.debug("Parsing request from node with aliases: {}".format(json.dumps(content,indent=1)))
         return content
 
     def routing_yesterday(self) -> tuple:
-
-        # print(json.dumps(),indent=3)
         response = self.routing_yesterday_get_all_as_dict()
         return self.__generate_aliases_for_channels(
             response

@@ -1,7 +1,7 @@
 import psycopg2
 import json
 from datetime import datetime
-
+from logger import Logger
 
 class DB:
     def __init__(
@@ -14,19 +14,21 @@ class DB:
         self.cursor = self.conn.cursor()  # creating a cursor
 
     
-    def write_tx_to_db(self, content_list: list) -> None:
+    def write_tx_to_db(self, content_list: list,logger:Logger) -> None:
+        logger.info("Start writting channels to DB.")
         for item in content_list:
-            # print(str(item) + "\n")
             self.__check_channel_in_db(
-                item["chan_id_in"], item["public_key_in"], item["chan_in_alias"]
+                item["chan_id_in"], item["public_key_in"], item["chan_in_alias"],logger
             )
             self.__check_channel_in_db(
-                item["chan_id_out"], item["public_key_out"], item["chan_out_alias"]
+                item["chan_id_out"], item["public_key_out"], item["chan_out_alias"],logger
             )
-            self.__write_routing_tx(item)
-
+            logger.info("Channels written to DB.")
+            logger.info("Start writing Txs to DB.")
+            self.__write_routing_tx(item,logger)
+            logger.info("Written TXs to DB.")
     def __check_channel_in_db(
-        self, channel_id: int, public_key: str, alias: str
+        self, channel_id: int, public_key: str, alias: str,logger:Logger
     ) -> None:
         # print(channel_id)
         self.cursor.execute(
@@ -34,14 +36,16 @@ class DB:
         )
         res = self.cursor.fetchone()
         if res[0] is None:
+            logger.info("Channel not in DB, writting it.")
             self.cursor.execute(
                 "INSERT INTO channels (channel_id,remote_public_key,alias) VALUES (%s,%s,%s);",
                 (channel_id, public_key, alias),
             )
+            self.debug("Channel to be written: {},{},{}".format(str(channel_id),str(public_key),str(alias)))
             self.conn.commit()
-        print(res)
+        logger.info("Channel written to DB.")
 
-    def __write_routing_tx(self, content: dict) -> None:
+    def __write_routing_tx(self, content: dict,logger:Logger) -> None:
         query = """
         INSERT INTO public.routing 
         (unix_timestamp, chan_id_in, chan_id_out, amount_in_sats, amount_out_sats, fee_sats, fee_milisats, amt_in_milisats, amount_out_milisats)
@@ -59,6 +63,8 @@ class DB:
             content["amt_in_msat"],
             content["amt_out_msat"],
         )
+        logger.info("Writting TX...")
+        logger.debug("Routing TX values: {}".format(str(values)))
         self.cursor.execute(query, values)
         self.conn.commit()
 

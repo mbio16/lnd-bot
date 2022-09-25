@@ -25,6 +25,7 @@ def main():
         config["MACAROON"],
         config["CERT_PATH"],
         config["VERIFY_CERT"] == "True",
+        logger
     )
 
     routing_txs = api.routing_since_time_as_dict(time)

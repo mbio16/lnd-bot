@@ -25,6 +25,8 @@ class Logger:
             self.__write_log_to_file("ERROR", "Could not write log to PostgresSQL")
 
     def __check_logging_level(self, level_fired: str) -> bool:
+        if self.loggin_level == "DEBUG":
+            return True
         if self.loggin_level == level_fired:
             return True
         if (

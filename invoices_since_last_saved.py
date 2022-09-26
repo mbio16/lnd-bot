@@ -28,8 +28,8 @@ def main():
         logger
     )
 
-    api.invoices_since_last_offset_as_list(0)
-
+    res = api.invoices_since_last_offset_as_list(0)
+    db.write_invoices(res,logger)
 
 if __name__ == "__main__":
     main()

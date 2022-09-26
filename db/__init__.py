@@ -69,6 +69,24 @@ class DB:
         self.cursor.execute(query, values)
         self.conn.commit()
 
+    def write_invoices(self,invoices:list, logger)->None:
+        for invoice in invoices:
+            query = """
+                INSERT INTO public.invoices (memo, value, value_milisats, settled, creation_date, settle_date, state, expiry)
+                VALUES(%s, %s, %s, %s, %s, %s, %s, %s);
+            """
+            values = (
+                invoice["memo"],
+                int(invoice["value"]),
+                int(invoice["value_msat"]),
+                invoice["settled"],
+                datetime.fromtimestamp(int(invoice["creation_date"])),
+                datetime.fromtimestamp(int(invoice["settle_date"])),
+                invoice["state"],
+                int(invoice["expiry"])
+            )
+            self.cursor.execute(query, values)
+            self.conn.commit()
     def write_log(self, level: str, message: str) -> bool:
         try:
             query = """INSERT INTO public.logs 

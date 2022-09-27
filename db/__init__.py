@@ -111,6 +111,17 @@ class DB:
             print(str(e))
             return False
 
+    def delete_all_invoices(self,logger)->None:
+        query= """
+                DELETE FROM invoices;
+                ALTER SEQUENCE invoices_id_seq RESTART WITH 1;
+        """
+        logger.info("Deleting from invoices...")
+        logger.info("Restarting sequence to 1...")
+        self.cursor.execute(query)
+        self.conn.commit()
+        
+        
     def get_youngest_unixtimestamp_routing_tx(self) -> int:
         query = """
                 SELECT unix_timestamp FROM routing

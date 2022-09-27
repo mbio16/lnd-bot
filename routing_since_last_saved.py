@@ -27,7 +27,6 @@ def main():
         config["VERIFY_CERT"] == "True",
         logger,
     )
-
     routing_txs = api.routing_since_time_as_dict(time)
     db.write_tx_to_db(routing_txs, logger)
 

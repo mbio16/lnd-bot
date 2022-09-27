@@ -249,6 +249,7 @@ class LND_api:
                 loop_to_run = False
             else:
                 current_offset += self.NUM_MAX_INVOICES
+                
         self.logger.debug("Number of invoices: {}".format(str(len(sum_list))))
         return sum_list
 

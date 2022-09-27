@@ -27,8 +27,8 @@ def main():
         config["VERIFY_CERT"] == "True",
         logger,
     )
-    db.delete_all_invoices(logger)
-    res = api.invoices_since_last_offset_as_list(0)
+    min_offset = db.delete_all_invoices_that_are_open(logger)
+    res = api.invoices_since_last_offset_as_list(min_offset)
     db.write_invoices(res, logger)
 
 

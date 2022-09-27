@@ -1,3 +1,5 @@
+from tkinter import SEL
+from xmlrpc.client import boolean
 import psycopg2
 import json
 from datetime import datetime
@@ -111,17 +113,47 @@ class DB:
             print(str(e))
             return False
 
-    def delete_all_invoices(self,logger)->None:
-        query= """
-                DELETE FROM invoices;
-                ALTER SEQUENCE invoices_id_seq RESTART WITH 1;
-        """
-        logger.info("Deleting from invoices...")
-        logger.info("Restarting sequence to 1...")
-        self.cursor.execute(query)
+    def delete_all_invoices_that_are_open(self,logger)->None:
+        if not self.__is_invoices_empty_table(logger):
+            logger.info("Empty table.. returning 0")
+            return 0
+        query = """
+                SELECT min(id) FROM invoices WHERE state = 'OPEN';
+                """
+        alter_offset_min = self.__get_offset_index_by_query(query)
+        if alter_offset_min is None:
+            logger.info("Returning max(id) from invoices.")
+            query = "SELECT max(id) FROM invoices;"
+            offset =  self.__get_offset_index_by_query(query) 
+            logger.debug("Offset: {}".format(str(offset)))
+            return offset
+        else:
+            query=  """
+                    DELETE FROM invoices where id>=%s;
+                    ALTER SEQUENCE invoices_id_seq RESTART WITH  %s;""" 
+            values = (alter_offset_min,int(alter_offset_min))
+            logger.info("Deleting from invoices...")
+            logger.info("Restarting sequence to {}...".format(str(alter_offset_min)))
+            self.cursor.execute(query,values)
+            self.conn.commit()
+            return alter_offset_min
+    
+    def __get_offset_index_by_query(self,query:str)->int:
+        self.cursor.execute(query, None)
         self.conn.commit()
-        
-        
+        offset = self.cursor.fetchone()[0]
+        return offset
+    
+    def __is_invoices_empty_table(self,logger)->bool:
+        query = """
+                SELECT count(*) FROM invoices;
+                """
+        self.cursor.execute(query, None)
+        self.conn.commit()
+        num_records = self.cursor.fetchone()[0]
+        logger.debug("Is invoices empty: {}".format(str(num_records)))
+        return num_records > 0
+                    
     def get_youngest_unixtimestamp_routing_tx(self) -> int:
         query = """
                 SELECT unix_timestamp FROM routing

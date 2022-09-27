@@ -17,8 +17,11 @@ class Logger:
 
     def __check_or_create_file(self) -> None:
         if not exists(self.file_url):
-            fp = open(self.file_url, "x")
-            fp.close()
+            try:
+                fp = open(self.file_url, "x")
+                fp.close()
+            except:
+                print("Path to file doesn not exists, can not make file...")
 
     def __write_log_to_db(self, level: str, message: str) -> None:
         if not self.db.write_log(level, message):

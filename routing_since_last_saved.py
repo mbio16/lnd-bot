@@ -25,11 +25,12 @@ def main():
         config["MACAROON"],
         config["CERT_PATH"],
         config["VERIFY_CERT"] == "True",
-        logger
+        logger,
     )
 
     routing_txs = api.routing_since_time_as_dict(time)
-    db.write_tx_to_db(routing_txs,logger)
+    db.write_tx_to_db(routing_txs, logger)
+
 
 #     signal = Signal_client(
 #         config["SIGNAL_SOURCE_NUMBER"],

@@ -22,7 +22,7 @@ class Logger:
                 fp.close()
             except:
                 print("Path to file doesn not exists, can not make file...")
-                
+
     def __write_log_to_db(self, level: str, message: str) -> None:
         if not self.db.write_log(level, message):
             self.__write_log_to_file("ERROR", "Could not write log to PostgresSQL")

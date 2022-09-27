@@ -18,18 +18,19 @@ def main():
         config["POSTGRES_HOST"],
     )
     logger = Logger(config["LOG_FILE"], db, loggin_level=config["LOG_LEVEL"])
-#    time = db.get_youngest_unixtimestamp_routing_tx()
+    #    time = db.get_youngest_unixtimestamp_routing_tx()
 
     api = LND_api(
         config["URL"],
         config["MACAROON"],
         config["CERT_PATH"],
         config["VERIFY_CERT"] == "True",
-        logger
+        logger,
     )
 
     res = api.invoices_since_last_offset_as_list(0)
-    db.write_invoices(res,logger)
+    db.write_invoices(res, logger)
+
 
 if __name__ == "__main__":
     main()

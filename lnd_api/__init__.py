@@ -9,8 +9,14 @@ import time
 class LND_api:
     NUM_MAX_INVOICES = 100
     NUM_MAX_EVENTS = 50000
+
     def __init__(
-        self, base_url: str, macaroon: str, cert_path: str, validate_cert: bool, logger: Logger
+        self,
+        base_url: str,
+        macaroon: str,
+        cert_path: str,
+        validate_cert: bool,
+        logger: Logger,
     ) -> None:
         self.base_url = base_url
         self.macaroon = macaroon
@@ -40,12 +46,10 @@ class LND_api:
         self.logger.info("Basic info parsed.")
         self.logger.debug(
             "Alias: {}, Color: {}, Pubkey: {}, Block_height: {}".format(
-                self.alias,
-                self.color,
-                self.pub_key,
-                self.height
-                )
+                self.alias, self.color, self.pub_key, self.height
             )
+        )
+
     def __str__(self) -> str:
         return self.alias
 
@@ -61,11 +65,17 @@ class LND_api:
             "num_max_events": self.NUM_MAX_EVENTS,
         }
         content = self.__switch(data)
-        self.logger.debug("Response for routing message: {}".format(json.dumps(content,indent=1)))
+        self.logger.debug(
+            "Response for routing message: {}".format(json.dumps(content, indent=1))
+        )
         self.logger.info("Parsed message from routing.")
         content = self.__generate_aliases_for_channels(content["forwarding_events"])
         self.logger.info("Parsed from aliases.")
-        self.logger.debug("Response for routing message with aliases: {}".format(json.dumps(content,indent=1)))
+        self.logger.debug(
+            "Response for routing message with aliases: {}".format(
+                json.dumps(content, indent=1)
+            )
+        )
         return content
 
     def routing_yesterday_get_all_as_dict(self) -> dict:
@@ -78,26 +88,36 @@ class LND_api:
             "end_time": str(int(yesterday_stop)),
             "num_max_events": self.NUM_MAX_EVENTS,
         }
-        self.logger.debug("Data in requests: {}".format(json.dumps(data,indent=1)))
+        self.logger.debug("Data in requests: {}".format(json.dumps(data, indent=1)))
         response = self.__switch(data)
         self.logger.info("Parsed message from routing.")
-        self.logger.debug("Response for routing message: {}".format(json.dumps(response,indent=1)))
+        self.logger.debug(
+            "Response for routing message: {}".format(json.dumps(response, indent=1))
+        )
         content = self.__generate_aliases_for_channels(response["forwarding_events"])
         self.logger.info("Parsed from aliases.")
-        self.logger.debug("Response for routing message with aliases: {}".format(json.dumps(content,indent=1)))
+        self.logger.debug(
+            "Response for routing message with aliases: {}".format(
+                json.dumps(content, indent=1)
+            )
+        )
         return content
 
-    def routing_since_time_as_dict(self,start_time_unix:int) -> dict:
-        data = {
-            "start_time": str(start_time_unix+1)
-        }
-        self.logger.debug("Data in requests: {}".format(json.dumps(data,indent=1)))
+    def routing_since_time_as_dict(self, start_time_unix: int) -> dict:
+        data = {"start_time": str(start_time_unix + 1)}
+        self.logger.debug("Data in requests: {}".format(json.dumps(data, indent=1)))
         self.logger.info("Sending request to node.")
         content = self.__switch(data)
         self.logger.info("Parsing requests from node.")
-        self.logger.debug("Parsing request from node: {}".format(json.dumps(content,indent=1)))
+        self.logger.debug(
+            "Parsing request from node: {}".format(json.dumps(content, indent=1))
+        )
         content = self.__generate_aliases_for_channels(content["forwarding_events"])
-        self.logger.debug("Parsing request from node with aliases: {}".format(json.dumps(content,indent=1)))
+        self.logger.debug(
+            "Parsing request from node with aliases: {}".format(
+                json.dumps(content, indent=1)
+            )
+        )
         return content
 
     def routing_yesterday(self) -> tuple:
@@ -207,30 +227,32 @@ class LND_api:
     def get_num_passive_channels(self) -> int:
         return self.num_inactive_channels
 
-    def invoices_since_last_offset_as_list(self,start_index_offset:int) -> list:
+    def invoices_since_last_offset_as_list(self, start_index_offset: int) -> list:
         sum_list = list()
         current_offset = start_index_offset
         loop_to_run = True
         self.logger.info("Preparing to send request for invoices...")
-        while(loop_to_run):
+        while loop_to_run:
             params = {
-                "index_offset":current_offset,
-                "num_max_invoices":self.NUM_MAX_INVOICES
+                "index_offset": current_offset,
+                "num_max_invoices": self.NUM_MAX_INVOICES,
             }
             self.logger.info("Request for invoices offset: {}".format(current_offset))
-            self.logger.debug("Request for invoices: {}".format(json.dumps(params,indent=1)))
-            
+            self.logger.debug(
+                "Request for invoices: {}".format(json.dumps(params, indent=1))
+            )
+
             content_list = self.__invoices(params)
             sum_list.extend(content_list)
-            if(len(content_list) == 0):
+            if len(content_list) == 0:
                 self.logger.info("Stopping sending request for invoices...")
                 loop_to_run = False
             else:
                 current_offset += self.NUM_MAX_INVOICES
         self.logger.debug("Number of invoices: {}".format(str(len(sum_list))))
         return sum_list
-    
-    def __invoices(self,params:dict)->dict:
+
+    def __invoices(self, params: dict) -> dict:
         try:
             urlTX = self.base_url + "/v1/invoices"
             r = requests.get(
@@ -238,8 +260,11 @@ class LND_api:
             )
             return r.json()["invoices"]
         except Exception as e:
-            self.logger.error("Error when recieving requests for invoices: {}".format(str(e)))
+            self.logger.error(
+                "Error when recieving requests for invoices: {}".format(str(e))
+            )
             return list()
+
     @staticmethod
     def convert_response_routing_to_text(response: list):
         result_str = ""

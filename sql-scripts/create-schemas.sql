@@ -153,3 +153,11 @@ AS SELECT routing.unix_timestamp,
    FROM routing
      LEFT JOIN channels chan1 ON routing.chan_id_in = chan1.channel_id
      LEFT JOIN channels chan2 ON routing.chan_id_out = chan2.channel_id;
+
+--INSERT to DEBUG level
+
+INSERT INTO public.log_type ("type") VALUES
+	 ('DEBUG'),
+	 ('INFO'),
+	 ('WARNING'),
+	 ('ERROR');

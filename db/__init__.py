@@ -16,6 +16,25 @@ class DB:
             database=db, user=user, password=password, host=host, port=port
         )
         self.cursor = self.conn.cursor()  # creating a cursor
+        if self.__is_db_cleared():
+            self.create_schema()
+            
+    def create_schema(self)->None:
+        with open("./sql-scripts/create-schemas.sql","r") as sql_file:
+            query = sql_file.read()
+            self.cursor.execute(query)
+            self.conn.commit()
+            
+
+    def __is_db_cleared(self)->bool:
+        query = """
+                    SELECT count(*) FROM pg_catalog.pg_tables
+                    WHERE schemaname != 'information_schema' AND
+                    schemaname != 'pg_catalog';
+                """
+        self.cursor.execute(query)
+        res = self.cursor.fetchone()
+        return (int(res[0]) == 0)
 
     def write_tx_to_db(self, content_list: list, logger) -> None:
         logger.info("Start writting channels to DB.")
@@ -49,7 +68,7 @@ class DB:
                 "INSERT INTO channels (channel_id,remote_public_key,alias) VALUES (%s,%s,%s);",
                 (channel_id, public_key, alias),
             )
-            self.debug(
+            logger.debug(
                 "Channel to be written: {},{},{}".format(
                     str(channel_id), str(public_key), str(alias)
                 )
@@ -161,7 +180,10 @@ class DB:
                 LIMIT 1;
         """
         self.cursor.execute(query, None)
-        res = self.cursor.fetchone()[0]
+        try:
+            res = self.cursor.fetchone()[0]
+        except:
+            return 0
         if res is None:
             return int(0)
         else:

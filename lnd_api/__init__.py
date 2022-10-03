@@ -104,7 +104,10 @@ class LND_api:
         return content
 
     def routing_since_time_as_dict(self, start_time_unix: int) -> dict:
-        data = {"start_time": str(start_time_unix + 1)}
+        data = {
+            "start_time": str(start_time_unix + 1),
+            "num_max_events": self.NUM_MAX_EVENTS
+            }
         self.logger.debug("Data in requests: {}".format(json.dumps(data, indent=1)))
         self.logger.info("Sending request to node.")
         content = self.__switch(data)

@@ -19,6 +19,7 @@ def main():
     )
     logger = Logger(config["LOG_FILE"], db, loggin_level=config["LOG_LEVEL"])
 
+
 #     signal = Signal_client(
 #         config["SIGNAL_SOURCE_NUMBER"],
 #         config["SIGNAL_RECIPIENTS"],

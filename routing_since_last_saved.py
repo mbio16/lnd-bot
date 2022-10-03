@@ -30,5 +30,6 @@ def main():
     routing_txs = api.routing_since_time_as_dict(time)
     db.write_tx_to_db(routing_txs, logger)
 
+
 if __name__ == "__main__":
     main()

@@ -10,6 +10,7 @@ class LND_api:
     NUM_MAX_INVOICES = 100
     NUM_MAX_EVENTS = 50000
     NUM_MAX_PAYMENTS = 100
+
     def __init__(
         self,
         base_url: str,
@@ -74,15 +75,17 @@ class LND_api:
         }
         return self.routing_since_time_as_dict(None, params_data=data)
 
-    def routing_since_time_as_dict(self, start_time_unix: int,params_data=None) -> dict:
+    def routing_since_time_as_dict(
+        self, start_time_unix: int, params_data=None
+    ) -> dict:
         result_list = list()
         data = None
         while True:
             if params_data is None:
                 data = {
                     "start_time": str(start_time_unix + 1),
-                    "num_max_events": self.NUM_MAX_EVENTS
-                    }
+                    "num_max_events": self.NUM_MAX_EVENTS,
+                }
             else:
                 data = params_data
             self.logger.debug("Data in requests: {}".format(json.dumps(data, indent=1)))
@@ -232,7 +235,7 @@ class LND_api:
                 loop_to_run = False
             else:
                 current_offset += self.NUM_MAX_INVOICES
-                
+
         self.logger.debug("Number of invoices: {}".format(str(len(sum_list))))
         return sum_list
 
@@ -249,29 +252,37 @@ class LND_api:
             )
             return list()
 
-    def payments_all_as_dict(self)->list:
+    def payments_all_as_dict(self) -> list:
         self.logger.info("Sending message for all payments.")
         return self.payments_from_index_offset_as_dict(1)
-    
-    def payments_from_index_offset_as_dict(self,start_index:int)->list:
+
+    def payments_from_index_offset_as_dict(self, start_index: int) -> list:
         index_offset = start_index
         result_list = list()
         while True:
-            self.logger.info("Sending message for payments, max {}".format(str(self.NUM_MAX_PAYMENTS)))
+            self.logger.info(
+                "Sending message for payments, max {}".format(
+                    str(self.NUM_MAX_PAYMENTS)
+                )
+            )
             data = {
                 "max_payments": self.NUM_MAX_PAYMENTS,
                 "count_total_payments": True,
-                "index_offset":str(index_offset)
-                }
+                "index_offset": str(index_offset),
+            }
             content = self.__payments(data)
             if len(content) == 0:
-                return result_list 
+                return result_list
             index_offset = content[-1]["payment_index"]
             result_list = result_list + content
-        
-    def __payments(self,params:dict)->list:
+
+    def __payments(self, params: dict) -> list:
         try:
-            self.logger.debug("Sending requests for paymtns with params {}".format(json.dumps(params,indent=1)))
+            self.logger.debug(
+                "Sending requests for paymtns with params {}".format(
+                    json.dumps(params, indent=1)
+                )
+            )
             urlTX = self.base_url + "/v1/payments"
             r = requests.get(
                 urlTX, headers=self.headers, verify=self.cert_path, params=params
@@ -282,8 +293,7 @@ class LND_api:
                 "Error when recieving requests for payments: {}".format(str(e))
             )
             return list()
-        
-        
+
     @staticmethod
     def convert_response_routing_to_text(response: list):
         result_str = ""

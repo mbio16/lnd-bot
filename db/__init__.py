@@ -18,15 +18,14 @@ class DB:
         self.cursor = self.conn.cursor()  # creating a cursor
         if self.__is_db_cleared():
             self.create_schema()
-            
-    def create_schema(self)->None:
-        with open("./sql-scripts/create-schemas.sql","r") as sql_file:
+
+    def create_schema(self) -> None:
+        with open("./sql-scripts/create-schemas.sql", "r") as sql_file:
             query = sql_file.read()
             self.cursor.execute(query)
             self.conn.commit()
-            
 
-    def __is_db_cleared(self)->bool:
+    def __is_db_cleared(self) -> bool:
         query = """
                     SELECT count(*) FROM pg_catalog.pg_tables
                     WHERE schemaname != 'information_schema' AND
@@ -34,7 +33,7 @@ class DB:
                 """
         self.cursor.execute(query)
         res = self.cursor.fetchone()
-        return (int(res[0]) == 0)
+        return int(res[0]) == 0
 
     def write_tx_to_db(self, content_list: list, logger) -> None:
         logger.info("Start writting channels to DB.")
@@ -132,7 +131,7 @@ class DB:
             print(str(e))
             return False
 
-    def delete_all_invoices_that_are_open(self,logger)->None:
+    def delete_all_invoices_that_are_open(self, logger) -> None:
         if not self.__is_invoices_empty_table(logger):
             logger.info("Empty table.. returning 0")
             return 0
@@ -143,27 +142,27 @@ class DB:
         if alter_offset_min is None:
             logger.info("Returning max(id) from invoices.")
             query = "SELECT max(id) FROM invoices;"
-            offset =  self.__get_offset_index_by_query(query) 
+            offset = self.__get_offset_index_by_query(query)
             logger.debug("Offset: {}".format(str(offset)))
             return offset
         else:
-            query=  """
+            query = """
                     DELETE FROM invoices where id>=%s;
-                    ALTER SEQUENCE invoices_id_seq RESTART WITH  %s;""" 
-            values = (alter_offset_min,int(alter_offset_min))
+                    ALTER SEQUENCE invoices_id_seq RESTART WITH  %s;"""
+            values = (alter_offset_min, int(alter_offset_min))
             logger.info("Deleting from invoices...")
             logger.info("Restarting sequence to {}...".format(str(alter_offset_min)))
-            self.cursor.execute(query,values)
+            self.cursor.execute(query, values)
             self.conn.commit()
             return alter_offset_min
-    
-    def __get_offset_index_by_query(self,query:str)->int:
+
+    def __get_offset_index_by_query(self, query: str) -> int:
         self.cursor.execute(query, None)
         self.conn.commit()
         offset = self.cursor.fetchone()[0]
         return offset
-    
-    def __is_invoices_empty_table(self,logger)->bool:
+
+    def __is_invoices_empty_table(self, logger) -> bool:
         query = """
                 SELECT count(*) FROM invoices;
                 """
@@ -172,7 +171,7 @@ class DB:
         num_records = self.cursor.fetchone()[0]
         logger.debug("Is invoices empty: {}".format(str(num_records)))
         return num_records > 0
-                    
+
     def get_youngest_unixtimestamp_routing_tx(self) -> int:
         query = """
                 SELECT unix_timestamp FROM routing
@@ -189,7 +188,7 @@ class DB:
         else:
             return int(res.timestamp())
 
-    def write_payments_to_db(self,payment_list:list)->None:
+    def write_payments_to_db(self, payment_list: list) -> None:
         for payment in payment_list:
             query = """
             INSERT INTO payments 
@@ -203,12 +202,12 @@ class DB:
                 int(payment["fee_sat"]),
                 int(payment["value_msat"]),
                 payment["status"],
-                int(payment["payment_index"])
+                int(payment["payment_index"]),
             )
-            self.cursor.execute(query,values)
+            self.cursor.execute(query, values)
         self.conn.commit()
-        
-    def get_last_index_offset(self)->int:
+
+    def get_last_index_offset(self) -> int:
         query = """
                 SELECT max(index_offset) from payments;
                 """

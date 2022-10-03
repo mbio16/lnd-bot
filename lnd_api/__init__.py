@@ -93,7 +93,6 @@ class LND_api:
                 "Parsing request from node: {}".format(json.dumps(content, indent=1))
             )
             result_list = result_list + content["forwarding_events"]
-            print(str(result_list))
             if len(content["forwarding_events"]) < self.NUM_MAX_INVOICES:
                 break
         result_list = self.__generate_aliases_for_channels(result_list)

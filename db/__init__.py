@@ -188,3 +188,33 @@ class DB:
             return int(0)
         else:
             return int(res.timestamp())
+
+    def write_payments_to_db(self,payment_list:list)->None:
+        for payment in payment_list:
+            query = """
+            INSERT INTO payments 
+            (value, value_milisat, creation_date, fee, fee_milisat, status, index_offset) 
+            VALUES(%s, %s, %s, %s, %s, %s, %s);
+            """
+            values = (
+                int(payment["value_sat"]),
+                int(payment["value_msat"]),
+                datetime.fromtimestamp(int(payment["creation_date"])),
+                int(payment["fee_sat"]),
+                int(payment["value_msat"]),
+                payment["status"],
+                int(payment["payment_index"])
+            )
+            self.cursor.execute(query,values)
+        self.conn.commit()
+        
+    def get_last_index_offset(self)->int:
+        query = """
+                SELECT max(index_offset) from payments;
+                """
+        self.cursor.execute(query)
+        try:
+            index = int(self.cursor.fetchone()[0])
+            return index
+        except:
+            return 0

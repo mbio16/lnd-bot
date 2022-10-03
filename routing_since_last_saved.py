@@ -30,35 +30,5 @@ def main():
     routing_txs = api.routing_since_time_as_dict(time)
     db.write_tx_to_db(routing_txs, logger)
 
-
-#     signal = Signal_client(
-#         config["SIGNAL_SOURCE_NUMBER"],
-#         config["SIGNAL_RECIPIENTS"],
-#         config["SIGNAL_URL"],
-#     )
-
-
-#     response, b = api.routing_yesterday()
-#     _, a = api.routing_all()
-#     text = api.convert_response_routing_to_text(response)
-#     message = "Date: " + date.today().strftime("%Y-%m-%d") + "\n"
-#     message += "Active channels: " + str(api.get_num_active_channels()) + "\n"
-#     message += "Inactive channels: " + str(api.get_num_passive_channels()) + "\n"
-#     message += "--------------------------\n"
-#     message += "Summary all time:\n"
-#     message += "--------------------------\n"
-#     message += api.convert_sum_to_text(a) + "\n"
-#     message += "--------------------------\n"
-#     message += "Summary yersterday:\n"
-#     message += "--------------------------\n"
-#     message += api.convert_sum_to_text(b) + "\n\n"
-#     message += text
-
-#     print(message)
-#     content_list = api.routing_yesterday_get_all_as_dict()
-#     db.write_tx_to_db(content_list)
-#     signal.send_string(message)
-
-
 if __name__ == "__main__":
     main()

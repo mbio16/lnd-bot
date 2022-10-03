@@ -9,7 +9,7 @@ import time
 class LND_api:
     NUM_MAX_INVOICES = 100
     NUM_MAX_EVENTS = 50000
-
+    NUM_MAX_PAYMENTS = 100
     def __init__(
         self,
         base_url: str,
@@ -249,6 +249,41 @@ class LND_api:
             )
             return list()
 
+    def payments_all_as_dict(self)->list:
+        self.logger.info("Sending message for all payments.")
+        return self.payments_from_index_offset_as_dict(1)
+    
+    def payments_from_index_offset_as_dict(self,start_index:int)->list:
+        index_offset = start_index
+        result_list = list()
+        while True:
+            self.logger.info("Sending message for payments, max {}".format(str(self.NUM_MAX_PAYMENTS)))
+            data = {
+                "max_payments": self.NUM_MAX_PAYMENTS,
+                "count_total_payments": True,
+                "index_offset":str(index_offset)
+                }
+            content = self.__payments(data)
+            if len(content) == 0:
+                return result_list 
+            index_offset = content[-1]["payment_index"]
+            result_list = result_list + content
+        
+    def __payments(self,params:dict)->list:
+        try:
+            self.logger.debug("Sending requests for paymtns with params {}".format(json.dumps(params,indent=1)))
+            urlTX = self.base_url + "/v1/payments"
+            r = requests.get(
+                urlTX, headers=self.headers, verify=self.cert_path, params=params
+            )
+            return r.json()["payments"]
+        except Exception as e:
+            self.logger.error(
+                "Error when recieving requests for payments: {}".format(str(e))
+            )
+            return list()
+        
+        
     @staticmethod
     def convert_response_routing_to_text(response: list):
         result_str = ""

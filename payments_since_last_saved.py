@@ -6,6 +6,7 @@ from logger import Logger
 import locale
 from dotenv import dotenv_values
 import requests
+import json
 
 
 def main():
@@ -18,7 +19,7 @@ def main():
         config["POSTGRES_HOST"],
     )
     logger = Logger(config["LOG_FILE"], db, loggin_level=config["LOG_LEVEL"])
-    time = db.get_youngest_unixtimestamp_routing_tx()
+    #time = db.get_youngest_unixtimestamp_routing_tx()
 
     api = LND_api(
         config["URL"],
@@ -27,8 +28,10 @@ def main():
         config["VERIFY_CERT"] == "True",
         logger,
     )
-    routing_txs = api.routing_since_time_as_dict(time)
-    db.write_tx_to_db(routing_txs, logger)
+    
+    index_offset = db.get_last_index_offset()
+    routing_txs = api.payments_from_index_offset_as_dict(index_offset)
+    db.write_payments_to_db(routing_txs)
 
 if __name__ == "__main__":
     main()

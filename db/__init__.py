@@ -1,3 +1,5 @@
+from tkinter import SEL
+from xmlrpc.client import boolean
 import psycopg2
 import json
 from datetime import datetime
@@ -14,6 +16,25 @@ class DB:
             database=db, user=user, password=password, host=host, port=port
         )
         self.cursor = self.conn.cursor()  # creating a cursor
+        if self.__is_db_cleared():
+            self.create_schema()
+            
+    def create_schema(self)->None:
+        with open("./sql-scripts/create-schemas.sql","r") as sql_file:
+            query = sql_file.read()
+            self.cursor.execute(query)
+            self.conn.commit()
+            
+
+    def __is_db_cleared(self)->bool:
+        query = """
+                    SELECT count(*) FROM pg_catalog.pg_tables
+                    WHERE schemaname != 'information_schema' AND
+                    schemaname != 'pg_catalog';
+                """
+        self.cursor.execute(query)
+        res = self.cursor.fetchone()
+        return (int(res[0]) == 0)
 
     def write_tx_to_db(self, content_list: list, logger) -> None:
         logger.info("Start writting channels to DB.")
@@ -47,7 +68,7 @@ class DB:
                 "INSERT INTO channels (channel_id,remote_public_key,alias) VALUES (%s,%s,%s);",
                 (channel_id, public_key, alias),
             )
-            self.debug(
+            logger.debug(
                 "Channel to be written: {},{},{}".format(
                     str(channel_id), str(public_key), str(alias)
                 )
@@ -111,17 +132,47 @@ class DB:
             print(str(e))
             return False
 
-    def delete_all_invoices(self,logger)->None:
-        query= """
-                DELETE FROM invoices;
-                ALTER SEQUENCE invoices_id_seq RESTART WITH 1;
-        """
-        logger.info("Deleting from invoices...")
-        logger.info("Restarting sequence to 1...")
-        self.cursor.execute(query)
+    def delete_all_invoices_that_are_open(self,logger)->None:
+        if not self.__is_invoices_empty_table(logger):
+            logger.info("Empty table.. returning 0")
+            return 0
+        query = """
+                SELECT min(id) FROM invoices WHERE state = 'OPEN';
+                """
+        alter_offset_min = self.__get_offset_index_by_query(query)
+        if alter_offset_min is None:
+            logger.info("Returning max(id) from invoices.")
+            query = "SELECT max(id) FROM invoices;"
+            offset =  self.__get_offset_index_by_query(query) 
+            logger.debug("Offset: {}".format(str(offset)))
+            return offset
+        else:
+            query=  """
+                    DELETE FROM invoices where id>=%s;
+                    ALTER SEQUENCE invoices_id_seq RESTART WITH  %s;""" 
+            values = (alter_offset_min,int(alter_offset_min))
+            logger.info("Deleting from invoices...")
+            logger.info("Restarting sequence to {}...".format(str(alter_offset_min)))
+            self.cursor.execute(query,values)
+            self.conn.commit()
+            return alter_offset_min
+    
+    def __get_offset_index_by_query(self,query:str)->int:
+        self.cursor.execute(query, None)
         self.conn.commit()
-        
-        
+        offset = self.cursor.fetchone()[0]
+        return offset
+    
+    def __is_invoices_empty_table(self,logger)->bool:
+        query = """
+                SELECT count(*) FROM invoices;
+                """
+        self.cursor.execute(query, None)
+        self.conn.commit()
+        num_records = self.cursor.fetchone()[0]
+        logger.debug("Is invoices empty: {}".format(str(num_records)))
+        return num_records > 0
+                    
     def get_youngest_unixtimestamp_routing_tx(self) -> int:
         query = """
                 SELECT unix_timestamp FROM routing
@@ -129,8 +180,41 @@ class DB:
                 LIMIT 1;
         """
         self.cursor.execute(query, None)
-        res = self.cursor.fetchone()[0]
+        try:
+            res = self.cursor.fetchone()[0]
+        except:
+            return 0
         if res is None:
             return int(0)
         else:
             return int(res.timestamp())
+
+    def write_payments_to_db(self,payment_list:list)->None:
+        for payment in payment_list:
+            query = """
+            INSERT INTO payments 
+            (value, value_milisat, creation_date, fee, fee_milisat, status, index_offset) 
+            VALUES(%s, %s, %s, %s, %s, %s, %s);
+            """
+            values = (
+                int(payment["value_sat"]),
+                int(payment["value_msat"]),
+                datetime.fromtimestamp(int(payment["creation_date"])),
+                int(payment["fee_sat"]),
+                int(payment["value_msat"]),
+                payment["status"],
+                int(payment["payment_index"])
+            )
+            self.cursor.execute(query,values)
+        self.conn.commit()
+        
+    def get_last_index_offset(self)->int:
+        query = """
+                SELECT max(index_offset) from payments;
+                """
+        self.cursor.execute(query)
+        try:
+            index = int(self.cursor.fetchone()[0])
+            return index
+        except:
+            return 0

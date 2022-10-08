@@ -18,7 +18,6 @@ def main():
         config["POSTGRES_HOST"],
     )
     logger = Logger(config["LOG_FILE"], db, loggin_level=config["LOG_LEVEL"])
-    time = db.get_youngest_unixtimestamp_routing_tx()
 
     api = LND_api(
         config["URL"],
@@ -27,8 +26,8 @@ def main():
         config["VERIFY_CERT"] == "True",
         logger,
     )
-    res = api.channel_backup_as_dict()
-    print(res)
-
+    #res = api.channel_backup_as_dict()
+    #print(res)
+    print(db.is_channel_backup_table_empty())
 if __name__ == "__main__":
     main()

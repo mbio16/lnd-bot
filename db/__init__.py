@@ -207,9 +207,33 @@ class DB:
             self.cursor.execute(query, values)
         self.conn.commit()
     def write_channel_backup(self,data:dict)->None:
-        if self.__is_channel_backup_table_empty()
+        if self.__is_channel_backup_table_empty():
+            self.__write_channel_backup()
         
-    def is_channel_backup_table_empty(self)->bool:
+        
+    def __last_channel_db_hash(self)->str:
+        query = """
+                SELECT sha256 FROM channel_backup 
+                ORDER BY date_creation DESC
+                LIMIT 1;
+                """
+        self.cursor.execute(query)
+        try:
+            return str(self.cursor.fetchone()[0])
+        except:
+            return ""
+        
+        
+    def __write_channel_backup(self,data:dict)->None:
+        query = """
+                INSERT INTO public.channel_backup (date_creation, sha256, "data") 
+                VALUES(NOW(), %s, %s);
+                """
+        hash_data = sha256(str(data).encode()).hexdigest()            
+        values = (hash_data,data)
+        self.cursor.execute(query, values)
+        self.conn.commit()
+    def __is_channel_backup_table_empty(self)->bool:
         query = """
                 SELECT count(*) FROM channel_backup;
                 """

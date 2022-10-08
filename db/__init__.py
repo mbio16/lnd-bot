@@ -207,16 +207,13 @@ class DB:
             )
             self.cursor.execute(query, values)
         self.conn.commit()
-    def write_channel_backup(self,data:dict)->None:
-        data = data["multi_chan_backup"]
+    def write_channel_backup(self,data:dict,logger)->None:
         if self.__is_channel_backup_table_empty():
             logger.info("Emptyu table... writting")
             self.__write_channel_backup(data)
             return
         hash_data_db = self.__last_channel_db_hash()
         hash_current = sha256(str(data).encode()).hexdigest()
-        print(str(hash_current))
-        print(str(hash_data_db))
         if hash_current == hash_data_db:
             logger.info("Hash mathes... skiping")
             return

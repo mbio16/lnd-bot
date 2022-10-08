@@ -1,3 +1,4 @@
+from asyncio.log import logger
 from tkinter import SEL
 from xmlrpc.client import boolean
 import psycopg2
@@ -207,9 +208,21 @@ class DB:
             self.cursor.execute(query, values)
         self.conn.commit()
     def write_channel_backup(self,data:dict)->None:
+        data = data["multi_chan_backup"]
         if self.__is_channel_backup_table_empty():
-            self.__write_channel_backup()
-        
+            logger.info("Emptyu table... writting")
+            self.__write_channel_backup(data)
+            return
+        hash_data_db = self.__last_channel_db_hash()
+        hash_current = sha256(str(data).encode()).hexdigest()
+        print(str(hash_current))
+        print(str(hash_data_db))
+        if hash_current == hash_data_db:
+            logger.info("Hash mathes... skiping")
+            return
+        else:
+           logger.info("Hash does not mathch... writing")
+           self.__write_channel_backup(data) 
         
     def __last_channel_db_hash(self)->str:
         query = """
@@ -230,9 +243,11 @@ class DB:
                 VALUES(NOW(), %s, %s);
                 """
         hash_data = sha256(str(data).encode()).hexdigest()            
-        values = (hash_data,data)
+        values = (hash_data,json.dumps(data))
         self.cursor.execute(query, values)
         self.conn.commit()
+        
+        
     def __is_channel_backup_table_empty(self)->bool:
         query = """
                 SELECT count(*) FROM channel_backup;

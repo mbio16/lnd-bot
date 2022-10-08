@@ -26,8 +26,8 @@ def main():
         config["VERIFY_CERT"] == "True",
         logger,
     )
-    #res = api.channel_backup_as_dict()
-    #print(res)
-    print(db.is_channel_backup_table_empty())
+    res = api.channel_backup_as_dict()
+    db.write_channel_backup(res)
+    
 if __name__ == "__main__":
     main()

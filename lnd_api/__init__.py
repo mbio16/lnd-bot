@@ -252,6 +252,17 @@ class LND_api:
             )
             return list()
 
+    def channel_backup_as_dict(self)->dict:
+        try:
+            urlCB = self.base_url + "/v1/channels/backup"
+            r = requests.get(urlCB,headers=self.headers,verify=self.cert_path)
+            return r.json()
+        except Exception as e:
+            self.logger.error(
+                "Error when recieving channel backup: {}".format(str(e))
+            )
+            return None
+        
     def payments_all_as_dict(self) -> list:
         self.logger.info("Sending message for all payments.")
         return self.payments_from_index_offset_as_dict(1)

@@ -3,7 +3,7 @@ from xmlrpc.client import boolean
 import psycopg2
 import json
 from datetime import datetime
-
+from hashlib import sha256
 # from logger import Logger
 
 
@@ -206,7 +206,22 @@ class DB:
             )
             self.cursor.execute(query, values)
         self.conn.commit()
-
+    def write_channel_backup(self,data:dict)->None:
+        if self.__is_channel_backup_table_empty()
+        
+    def is_channel_backup_table_empty(self)->bool:
+        query = """
+                SELECT count(*) FROM channel_backup;
+                """
+        self.cursor.execute(query)
+        try:
+            index = int(self.cursor.fetchone()[0])
+            if index == 0:
+                return True
+            else:
+                return False
+        except:
+            return True
     def get_last_index_offset(self) -> int:
         query = """
                 SELECT max(index_offset) from payments;

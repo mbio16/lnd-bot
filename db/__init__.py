@@ -1,4 +1,5 @@
 from asyncio.log import logger
+from os import curdir
 from tkinter import SEL
 from xmlrpc.client import boolean
 import psycopg2
@@ -220,14 +221,13 @@ class DB:
         query = """
                 SELECT max(index_offset) from payments;
                 """
-        self.cursor.execute(query)
         try:
-            index = int(self.cursor.fetchone()[0])
+            index = int(self.__request_query_fetch_one(query,None))
             return index
         except:
             return 0
 
-    def get_sum_routing_yesterday(self)-> str:
+    def get_sum_routing_yesterday(self)-> float:
         today_date = date.today().strftime("%Y-%m-%d")
         yesterday_date = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")
         query = """
@@ -236,14 +236,10 @@ class DB:
                 and 
                     unix_timestamp < %s;
                 """
-        print(today_date)
-        print(yesterday_date)
         values = (yesterday_date,today_date)
-        self.cursor.execute(query,values)
-        res = self.cursor.fetchone()[0]
-        return str(int(res)/100000000)
+        return float(int(self.__request_query_fetch_one(query,values))/100000000)
     
-    def get_fee_yesterday_sats(self)->str:
+    def get_fee_yesterday_sats(self)->int:
         today_date = date.today().strftime("%Y-%m-%d")
         yesterday_date = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")
         query = """
@@ -253,6 +249,23 @@ class DB:
                     unix_timestamp < %s;
                 """
         values = (yesterday_date,today_date)
-        self.cursor.execute(query,values)
-        res = self.cursor.fetchone()[0]
-        return str(float(res)/1000)
+        return int((float(self.__request_query_fetch_one(query,values))/1000))
+    
+    def get_sum_routing_all(self)->float:
+        query = """
+                SELECT sum(amount_out_sats) FROM routing;
+                """
+        return float(int(self.__request_query_fetch_one(query,None))/100000000)
+    
+    def get_fee_routing_all_sats(self)->str:
+        query = """
+                SELECT sum(fee_milisats) FROM routing; 
+                """
+        return int((float(self.__request_query_fetch_one(query,None))/1000))
+    
+    def __request_query_fetch_one(self,query:str,values:tuple)->object:
+        if values is None:
+            self.cursor.execute(query)
+        else:
+            self.cursor.execute(query,values)
+        return self.cursor.fetchone()[0]

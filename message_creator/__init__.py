@@ -2,6 +2,7 @@ from db import DB
 from logger import Logger
 from lnd_api import LND_api
 from datetime import date
+
 class Message_creator():
 
     def __init__(self,db:DB,lnd_api: LND_api ,  logger: Logger) -> None:
@@ -17,10 +18,10 @@ class Message_creator():
         return "Inactive channels: {} \n".format(str(self.api.get_num_passive_channels()))
     
     def routing_all(self)->str:
-       return "Routing all: {} \n".format(self.db.get_sum_routing_all()) 
+       return "Routing all: {:.8f} \n".format(self.db.get_sum_routing_all()) 
     
     def fee_all(self)->str:
-        return "Fee sats all: {} \n".format(self.db.get_fee_all_sats())
+        return "Fee sats all: {:,d} \n".format(self.db.get_fee_routing_all_sats()).replace(',', ' ')
     
     #     response, b = api.routing_yesterday()
 #     _, a = api.routing_all()

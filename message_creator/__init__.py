@@ -18,11 +18,25 @@ class Message_creator():
         return "Inactive channels: {} \n".format(str(self.api.get_num_passive_channels()))
     
     def routing_all(self)->str:
-       return "Routing all: {:.8f} \n".format(self.db.get_sum_routing_all()) 
+       value = self.__btc_format(self.db.get_sum_routing_all())
+       return "Routing all: {} \n".format(value) 
     
     def fee_all(self)->str:
-        return "Fee sats all: {:,d} \n".format(self.db.get_fee_routing_all_sats()).replace(',', ' ')
+        value = self.__sats_format(self.db.get_fee_routing_all_sats())
+        return "Fee sats all: {} \n".format(value)
     
+    def routing_yesterday(self)->str:
+        value = self.__btc_format(self.db.get_sum_routing_yesterday())
+        return "Routing yesterday: {} \n".format(value)
+    
+    def fee_yesterday(self)->str:
+        value = self.__sats_format(self.db.get_fee_yesterday_sats())
+        return "Fee sats yesterday: {} \n".format(value)
+     
+    def __btc_format(self,value:float)->str:
+        return "{:.8f}".format(value)
+    def __sats_format(self,value:int)->str:
+        return "{:,d}".format(value).replace(',', ' ')
     #     response, b = api.routing_yesterday()
 #     _, a = api.routing_all()
 #     text = api.convert_response_routing_to_text(response)

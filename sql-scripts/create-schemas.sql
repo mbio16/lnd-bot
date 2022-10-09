@@ -155,18 +155,16 @@ AS SELECT routing.unix_timestamp,
      LEFT JOIN channels chan2 ON routing.chan_id_out = chan2.channel_id;
 
 
+
+
 CREATE TABLE public.channel_backup (
-	id serial NOT NULL,
-	date_creation timestamp without time zone NULL,
-	sha256 varchar NULL,
+	id int4 NOT NULL DEFAULT nextval('newtable_id_seq'::regclass),
+	date_creation timestamp NULL,
 	"data" json NULL,
 	CONSTRAINT channel_bc_pk PRIMARY KEY (id)
 );
-CREATE INDEX channel_backup_id_idx ON public.channel_backup (id);
-CREATE INDEX channel_backup_date_creation_idx ON public.channel_backup (date_creation);
-CREATE INDEX channel_backup_sha256_idx ON public.channel_backup (sha256);
-
-
+CREATE INDEX newtable_date_creation_idx ON public.channel_backup USING btree (date_creation);
+CREATE INDEX newtable_id_idx ON public.channel_backup USING btree (id);
 --INSERT to DEBUG level
 
 INSERT INTO public.log_type ("type") VALUES

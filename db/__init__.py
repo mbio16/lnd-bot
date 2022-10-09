@@ -4,7 +4,6 @@ from xmlrpc.client import boolean
 import psycopg2
 import json
 from datetime import datetime
-from hashlib import sha256
 # from logger import Logger
 
 
@@ -208,56 +207,15 @@ class DB:
             self.cursor.execute(query, values)
         self.conn.commit()
     def write_channel_backup(self,data:dict,logger)->None:
-        if self.__is_channel_backup_table_empty():
-            logger.info("Emptyu table... writting")
-            self.__write_channel_backup(data)
-            return
-        hash_data_db = self.__last_channel_db_hash()
-        hash_current = sha256(str(data).encode()).hexdigest()
-        if hash_current == hash_data_db:
-            logger.info("Hash mathes... skiping")
-            return
-        else:
-           logger.info("Hash does not mathch... writing")
-           self.__write_channel_backup(data) 
-        
-    def __last_channel_db_hash(self)->str:
+        logger.info("Writting channel backup to DB...")
         query = """
-                SELECT sha256 FROM channel_backup 
-                ORDER BY date_creation DESC
-                LIMIT 1;
-                """
-        self.cursor.execute(query)
-        try:
-            return str(self.cursor.fetchone()[0])
-        except:
-            return ""
-        
-        
-    def __write_channel_backup(self,data:dict)->None:
-        query = """
-                INSERT INTO public.channel_backup (date_creation, sha256, "data") 
-                VALUES(NOW(), %s, %s);
-                """
-        hash_data = sha256(str(data).encode()).hexdigest()            
-        values = (hash_data,json.dumps(data))
+                INSERT INTO public.channel_backup (date_creation, "data") 
+                VALUES(NOW(), %s);"""           
+        values = (json.dumps(data),)
         self.cursor.execute(query, values)
         self.conn.commit()
         
-        
-    def __is_channel_backup_table_empty(self)->bool:
-        query = """
-                SELECT count(*) FROM channel_backup;
-                """
-        self.cursor.execute(query)
-        try:
-            index = int(self.cursor.fetchone()[0])
-            if index == 0:
-                return True
-            else:
-                return False
-        except:
-            return True
+    
     def get_last_index_offset(self) -> int:
         query = """
                 SELECT max(index_offset) from payments;

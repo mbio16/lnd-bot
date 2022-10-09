@@ -3,7 +3,7 @@ from tkinter import SEL
 from xmlrpc.client import boolean
 import psycopg2
 import json
-from datetime import datetime
+from datetime import datetime,date,timedelta
 # from logger import Logger
 
 
@@ -226,3 +226,33 @@ class DB:
             return index
         except:
             return 0
+
+    def get_sum_routing_yesterday(self)-> str:
+        today_date = date.today().strftime("%Y-%m-%d")
+        yesterday_date = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")
+        query = """
+                SELECT sum(amount_out_sats) FROM routing WHERE
+                    unix_timestamp >= %s 
+                and 
+                    unix_timestamp < %s;
+                """
+        print(today_date)
+        print(yesterday_date)
+        values = (yesterday_date,today_date)
+        self.cursor.execute(query,values)
+        res = self.cursor.fetchone()[0]
+        return str(int(res)/100000000)
+    
+    def get_fee_yesterday_sats(self)->str:
+        today_date = date.today().strftime("%Y-%m-%d")
+        yesterday_date = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")
+        query = """
+                SELECT sum(fee_milisats) FROM routing WHERE
+                    unix_timestamp >= %s 
+                and 
+                    unix_timestamp < %s;
+                """
+        values = (yesterday_date,today_date)
+        self.cursor.execute(query,values)
+        res = self.cursor.fetchone()[0]
+        return str(float(res)/1000)

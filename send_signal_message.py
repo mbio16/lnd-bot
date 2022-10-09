@@ -8,7 +8,6 @@ from dotenv import dotenv_values
 from message_creator import Message_creator
 
 
-
 def main():
     locale.setlocale(locale.LC_ALL, "")
     config = dotenv_values(".env")
@@ -27,9 +26,11 @@ def main():
         config["VERIFY_CERT"] == "True",
         logger,
     )
-    message = Message_creator(db,api,logger)
+    message = Message_creator(db, api, logger)
     print(message.routing_all())
     print(message.fee_all())
+    db.get_routing_events_yesterday()
+
 
 if __name__ == "__main__":
     main()

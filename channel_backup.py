@@ -27,7 +27,8 @@ def main():
         logger,
     )
     res = api.channel_backup_as_dict()
-    db.write_channel_backup(res,logger)
-    
+    db.write_channel_backup(res, logger)
+
+
 if __name__ == "__main__":
     main()

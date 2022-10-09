@@ -4,7 +4,8 @@ from tkinter import SEL
 from xmlrpc.client import boolean
 import psycopg2
 import json
-from datetime import datetime,date,timedelta
+from datetime import datetime, date, timedelta
+
 # from logger import Logger
 
 
@@ -207,65 +208,111 @@ class DB:
             )
             self.cursor.execute(query, values)
         self.conn.commit()
-    def write_channel_backup(self,data:dict,logger)->None:
+
+    def write_channel_backup(self, data: dict, logger) -> None:
         logger.info("Writting channel backup to DB...")
         query = """
                 INSERT INTO public.channel_backup (date_creation, "data") 
-                VALUES(NOW(), %s);"""           
+                VALUES(NOW(), %s);"""
         values = (json.dumps(data),)
         self.cursor.execute(query, values)
         self.conn.commit()
-        
-    
+
     def get_last_index_offset(self) -> int:
         query = """
                 SELECT max(index_offset) from payments;
                 """
         try:
-            index = int(self.__request_query_fetch_one(query,None))
+            index = int(self.__request_query_fetch_one(query, None))
             return index
         except:
             return 0
 
-    def get_sum_routing_yesterday(self)-> float:
-        today_date = date.today().strftime("%Y-%m-%d")
-        yesterday_date = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")
+    def get_sum_routing_yesterday(self) -> float:
+        yesterday_date, today_date = self.__yesterday_today_tuple()
         query = """
                 SELECT sum(amount_out_sats) FROM routing WHERE
                     unix_timestamp >= %s 
                 and 
                     unix_timestamp < %s;
                 """
-        values = (yesterday_date,today_date)
-        return float(int(self.__request_query_fetch_one(query,values))/100000000)
-    
-    def get_fee_yesterday_sats(self)->int:
-        today_date = date.today().strftime("%Y-%m-%d")
-        yesterday_date = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")
+        values = (yesterday_date, today_date)
+        return float(int(self.__request_query_fetch_one(query, values)) / 100000000)
+
+    def get_fee_yesterday_sats(self) -> int:
+        yesterday_date, today_date = self.__yesterday_today_tuple()
         query = """
                 SELECT sum(fee_milisats) FROM routing WHERE
                     unix_timestamp >= %s 
                 and 
                     unix_timestamp < %s;
                 """
-        values = (yesterday_date,today_date)
-        return int((float(self.__request_query_fetch_one(query,values))/1000))
-    
-    def get_sum_routing_all(self)->float:
+        values = (yesterday_date, today_date)
+        return int((float(self.__request_query_fetch_one(query, values)) / 1000))
+
+    def get_sum_routing_all(self) -> float:
         query = """
                 SELECT sum(amount_out_sats) FROM routing;
                 """
-        return float(int(self.__request_query_fetch_one(query,None))/100000000)
-    
-    def get_fee_routing_all_sats(self)->str:
+        return float(int(self.__request_query_fetch_one(query, None)) / 100000000)
+
+    def get_fee_routing_all_sats(self) -> str:
         query = """
                 SELECT sum(fee_milisats) FROM routing; 
                 """
-        return int((float(self.__request_query_fetch_one(query,None))/1000))
-    
-    def __request_query_fetch_one(self,query:str,values:tuple)->object:
+        return int((float(self.__request_query_fetch_one(query, None)) / 1000))
+
+    def get_tx_routing_count_all(self) -> int:
+        query = """
+                SELECT count(id) from routing;
+                """
+        return int(self.__request_query_fetch_one(query, None))
+
+    def get_tx_routing_count_yesterday(self) -> int:
+        query = """
+                SELECT count(id) FROM routing WHERE
+                 unix_timestamp >= %s 
+                and 
+                 unix_timestamp < %s;
+                """
+        yesterday_date, today_date = self.__yesterday_today_tuple()
+        values = (yesterday_date, today_date)
+        return int(self.__request_query_fetch_one(query, values))
+
+    def get_routing_events_yesterday(self) -> list:
+        yesterday_date, today_date = self.__yesterday_today_tuple()
+        values = (yesterday_date, today_date)
+        query = """
+                SELECT unix_timestamp,alias_in,alias_out, amount_out_sats, fee_milisats
+                FROM routing_completed
+                WHERE
+                 unix_timestamp >= %s 
+                and 
+                 unix_timestamp < %s;
+                """
+        self.cursor.execute(query, values)
+        res = self.cursor.fetchall()
+        result = list()
+        for item in res:
+            result.append(
+                {
+                    "date": item[0].strftime("%Y-%m-%d %H:%M:%S"),
+                    "alias_in": item[1],
+                    "alias_out": item[2],
+                    "amount": item[3],
+                    "fee_msats": item[4],
+                }
+            )
+        return result
+
+    def __yesterday_today_tuple(self) -> tuple:
+        today_date = date.today().strftime("%Y-%m-%d")
+        yesterday_date = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")
+        return yesterday_date, today_date
+
+    def __request_query_fetch_one(self, query: str, values: tuple) -> object:
         if values is None:
             self.cursor.execute(query)
         else:
-            self.cursor.execute(query,values)
+            self.cursor.execute(query, values)
         return self.cursor.fetchone()[0]

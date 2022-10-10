@@ -239,7 +239,8 @@ class DB:
                     unix_timestamp < %s;
                 """
         values = (yesterday_date, today_date)
-        return float(int(self.__request_query_fetch_one(query, values)) / 100000000)
+        
+        return self.__parse_res_value_float(self.__request_query_fetch_one(query, values) / 100000000)
 
     def get_fee_yesterday_sats(self) -> int:
         yesterday_date, today_date = self.__yesterday_today_tuple()
@@ -250,25 +251,25 @@ class DB:
                     unix_timestamp < %s;
                 """
         values = (yesterday_date, today_date)
-        return int((float(self.__request_query_fetch_one(query, values)) / 1000))
+        return self.__parse_res_value(self.__request_query_fetch_one(query, values) / 1000)
 
     def get_sum_routing_all(self) -> float:
         query = """
                 SELECT sum(amount_out_sats) FROM routing;
                 """
-        return float(int(self.__request_query_fetch_one(query, None)) / 100000000)
+        return float(self.__parse_res_value_float((self.__request_query_fetch_one(query, None))) / 100000000)
 
     def get_fee_routing_all_sats(self) -> str:
         query = """
                 SELECT sum(fee_milisats) FROM routing; 
                 """
-        return int((float(self.__request_query_fetch_one(query, None)) / 1000))
+        return self.__parse_res_value(self.__request_query_fetch_one(query, None) / 1000)
 
     def get_tx_routing_count_all(self) -> int:
         query = """
                 SELECT count(id) from routing;
                 """
-        return int(self.__request_query_fetch_one(query, None))
+        return self.__parse_res_value(self.__request_query_fetch_one(query, None))
 
     def get_tx_routing_count_yesterday(self) -> int:
         query = """
@@ -279,7 +280,7 @@ class DB:
                 """
         yesterday_date, today_date = self.__yesterday_today_tuple()
         values = (yesterday_date, today_date)
-        return int(self.__request_query_fetch_one(query, values))
+        return self.__parse_res_value(self.__request_query_fetch_one(query, values))
 
     def get_routing_events_yesterday(self) -> list:
         yesterday_date, today_date = self.__yesterday_today_tuple()
@@ -332,7 +333,16 @@ class DB:
             "onchain": res[3],
             "pending": res[4],
         }
-
+    def __parse_res_value(self,data:object)->int:
+        if data is None:
+            return int(0)
+        else:
+            return int(data)
+    def __parse_res_value_float(self,data:object)->float:
+        if data is None:
+            return float(0)
+        else:
+            return float(data)
     def __yesterday_today_tuple(self) -> tuple:
         today_date = date.today().strftime("%Y-%m-%d")
         yesterday_date = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")

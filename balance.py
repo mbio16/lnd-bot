@@ -30,8 +30,7 @@ def main():
     message = Message_creator(db, api, logger)
     res = api.balance_as_dict()
     db.write_balance(res)
-    print(str(message.initial_info()))
-    print(str(message.balance()))
+    print(str(message))
 
 
 if __name__ == "__main__":

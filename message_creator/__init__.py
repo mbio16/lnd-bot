@@ -24,27 +24,28 @@ class Message_creator:
     def __channel_alias(self) -> str:
         return "Alias: \t{}\n".format(str(self.lnd_api))
 
-    def routing_all(self) -> str:
+    def __routing_all(self) -> str:
         value = self.__btc_format(self.db.get_sum_routing_all())
         return "Routing all [BTC]: \t{}\n".format(value)
 
-    def fee_all(self) -> str:
+    def __fee_all(self) -> str:
         value = self.__sats_format(self.db.get_fee_routing_all_sats())
         return "Fee all [sats]: \t{}\n".format(value)
 
-    def routing_yesterday(self) -> str:
+    def __routing_yesterday(self) -> str:
         value = self.__btc_format(self.db.get_sum_routing_yesterday())
         return "Routing yesterday [BTC]: \t{}\n".format(value)
 
-    def fee_yesterday(self) -> str:
+    def __fee_yesterday(self) -> str:
         value = self.__sats_format(self.db.get_fee_yesterday_sats())
         return "Fee yesterday [sats]: \t{}\n".format(value)
 
-    def count_routing_tx_all(self) -> str:
+    def __count_routing_tx_all(self) -> str:
         value = self.__sats_format(self.db.get_tx_routing_count_all())
-        return "TXs: \t{}\n".format(value)
+        print(value)
+        return "TXs: \t\t\t{}\n".format(value)
 
-    def count_routing_tx_yesterday(self) -> str:
+    def __count_routing_tx_yesterday(self) -> str:
         value = self.__sats_format(self.db.get_tx_routing_count_yesterday())
         return "TX: \t{}\n".format(value)
 
@@ -76,11 +77,35 @@ class Message_creator:
         message += "{}".format(self.__channel_alias())
         message += "{}".format(self.__active_channels())
         message += "{}".format(self.__inactive_channels())
-        message += "{}".format(self.__line())
+        message += "{}\n".format(self.__line())
+        return message
+
+    def summary_all_time(self) -> str:
+        message = "\nSummary all time:\n"
+        message += "{}\n".format(self.__line())
+        message += "{}".format(self.__count_routing_tx_all())
+        message += "{}".format(self.__routing_all())
+        message += "{}".format(self.__fee_all())
+        message += "{}\n".format(self.__line())
+        return message
+
+    def summary_yesterday(self)->str:
+        message = "Summary yersterday:"
+        message += "\n{}\n".format(self.__line())
+        message += "{}".format(self.__count_routing_tx_yesterday())
+        message += "{}".format(self.__routing_yesterday())
+        message += "{}\n".format(self.__fee_yesterday())
+        
+
+    def __str__(self) -> str:
+        message = self.initial_info()
+        message += self.balance()
+        message += self.summary_all_time()
+        message += self.summary_yesterday()
         return message
 
     def __line(self) -> str:
-        return 32 * "-"
+        return 36 * "-"
 
     def __btc_format(elf, value: float) -> str:
         return "{:.8f}".format(value)

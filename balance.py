@@ -8,6 +8,7 @@ from dotenv import dotenv_values
 import requests
 from message_creator import Message_creator
 
+
 def main():
     locale.setlocale(locale.LC_ALL, "")
     config = dotenv_values(".env")
@@ -26,10 +27,10 @@ def main():
         config["VERIFY_CERT"] == "True",
         logger,
     )
-    message = Message_creator(db,api,logger)
+    message = Message_creator(db, api, logger)
     res = api.balance_as_dict()
     db.write_balance(res)
-    print(str(res))
+    print(str(message.initial_info()))
     print(str(message.balance()))
 
 

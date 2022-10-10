@@ -6,6 +6,7 @@ from logger import Logger
 import locale
 from dotenv import dotenv_values
 import requests
+from message_creator import Message_creator
 
 
 def main():
@@ -29,6 +30,8 @@ def main():
     )
     routing_txs = api.routing_since_time_as_dict(time)
     db.write_tx_to_db(routing_txs, logger)
+    message = Message_creator(db, api, logger)
+    print(message.routing_events())
 
 
 if __name__ == "__main__":

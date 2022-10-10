@@ -11,50 +11,78 @@ class Message_creator:
         self.lnd_api = lnd_api
 
     def __date_str(self) -> str:
-        return "Date: \t{} \n".format(date.today().strftime("%Y-%m-%d"))
+        return "Date: \t{}\n".format(date.today().strftime("%Y-%m-%d"))
 
     def __active_channels(self) -> str:
-        return "Active channels: \t{} \n".format(self.api.get_num_active_channels())
+        return "Active channels: \t{}\n".format(self.lnd_api.get_num_active_channels())
 
     def __inactive_channels(self) -> str:
-        return "Inactive channels: \t{} \n".format(
-            str(self.api.get_num_passive_channels())
+        return "Inactive channels: \t{}\n".format(
+            str(self.lnd_api.get_num_passive_channels())
         )
+
+    def __channel_alias(self) -> str:
+        return "Alias: \t{}\n".format(str(self.lnd_api))
 
     def routing_all(self) -> str:
         value = self.__btc_format(self.db.get_sum_routing_all())
-        return "Routing all [BTC]: \t{} \n".format(value)
+        return "Routing all [BTC]: \t{}\n".format(value)
 
     def fee_all(self) -> str:
         value = self.__sats_format(self.db.get_fee_routing_all_sats())
-        return "Fee all [sats]: \t{} \n".format(value)
+        return "Fee all [sats]: \t{}\n".format(value)
 
     def routing_yesterday(self) -> str:
         value = self.__btc_format(self.db.get_sum_routing_yesterday())
-        return "Routing yesterday [BTC]: \t{} \n".format(value)
+        return "Routing yesterday [BTC]: \t{}\n".format(value)
 
     def fee_yesterday(self) -> str:
         value = self.__sats_format(self.db.get_fee_yesterday_sats())
-        return "Fee yesterday [sats]: \t{} \n".format(value)
+        return "Fee yesterday [sats]: \t{}\n".format(value)
 
     def count_routing_tx_all(self) -> str:
         value = self.__sats_format(self.db.get_tx_routing_count_all())
-        return "TXs: \t{}".format(value)
+        return "TXs: \t{}\n".format(value)
 
     def count_routing_tx_yesterday(self) -> str:
         value = self.__sats_format(self.db.get_tx_routing_count_yesterday())
-        return "TX: \t{}".format(value)
+        return "TX: \t{}\n".format(value)
 
-    def balance(self)->str:
+    def balance(self) -> str:
         res = self.db.get_balance()
-        message = ""
-        message += "Date: \t\t{} \n".format(res["date"])
+        message = "Date: \t\t{} \n".format(res["date"])
         message += "Inbound: \t{} \n".format(self.__sats_format(res["inbound"]))
         message += "Outbound: \t{} \n".format(self.__sats_format(res["outbound"]))
         message += "Onchain: \t{} \n".format(self.__sats_format(res["onchain"]))
         message += "Pending: \t{} \n".format(self.__sats_format(res["pending"]))
-        return message 
-    def __btc_format(self, value: float) -> str:
+        message += self.__line()
+        return message
+
+    def routing_events(self) -> str:
+        res = self.db.get_routing_events_yesterday()
+        message = ""
+        for item in res:
+            message += "{}: from '{}' to '{}' amount {} for fee {:.2f}\n".format(
+                item["date"],
+                item["alias_in"],
+                item["alias_out"],
+                self.__sats_format(item["amount"]),
+                item["fee_msats"] / 1000,
+            )
+        return message
+
+    def initial_info(self) -> str:
+        message = "{}".format(self.__date_str())
+        message += "{}".format(self.__channel_alias())
+        message += "{}".format(self.__active_channels())
+        message += "{}".format(self.__inactive_channels())
+        message += "{}".format(self.__line())
+        return message
+
+    def __line(self) -> str:
+        return 32 * "-"
+
+    def __btc_format(elf, value: float) -> str:
         return "{:.8f}".format(value)
 
     def __sats_format(self, value: int) -> str:

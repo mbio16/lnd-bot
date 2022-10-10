@@ -165,7 +165,18 @@ CREATE TABLE public.channel_backup (
 );
 CREATE INDEX newtable_date_creation_idx ON public.channel_backup USING btree (date_creation);
 CREATE INDEX newtable_id_idx ON public.channel_backup USING btree (id);
---INSERT to DEBUG level
+
+CREATE TABLE public.balance (
+	id int4 NOT NULL DEFAULT nextval('newtable_id_seq1'::regclass),
+	unix_timestamp timestamp NOT NULL,
+	inbound_sats int8 NOT NULL,
+	outbound_sats int8 NOT NULL,
+	onchain int8 NOT NULL,
+	pending_open_balance int8 NOT NULL,
+	CONSTRAINT balance_pk PRIMARY KEY (id)
+);
+CREATE INDEX balance_unix_timestamp_idx ON public.balance USING btree (unix_timestamp DESC);
+
 
 INSERT INTO public.log_type ("type") VALUES
 	 ('DEBUG'),

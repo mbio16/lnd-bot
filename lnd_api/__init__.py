@@ -320,41 +320,38 @@ class LND_api:
             )
         return result_str
 
-    def balance_as_dict(self)->dict:
+    def balance_as_dict(self) -> dict:
         result = dict()
         res1 = self.__get_onchain_balance()
         result["outbound"] = int(res1["total_balance"])
         res2 = self.__get_ln_balance()
         result["inbound"] = int(res2["local_balance"]["sat"])
         result["outbound"] = int(res2["remote_balance"]["sat"])
-        result["pending"] = int(res2["pending_open_balance"]) 
+        result["pending"] = int(res2["pending_open_balance"])
         return result
-    
-    def __get_ln_balance(self)->dict:
+
+    def __get_ln_balance(self) -> dict:
         try:
             urlTX = self.base_url + "/v1/balance/channels"
-            r = requests.get(
-                urlTX, headers=self.headers, verify=self.cert_path
-            )
+            r = requests.get(urlTX, headers=self.headers, verify=self.cert_path)
             return r.json()
         except Exception as e:
             self.logger.error(
                 "Error when recieving requests for balance channel: {}".format(str(e))
             )
             return None
-        
-    def __get_onchain_balance(self)->dict:
+
+    def __get_onchain_balance(self) -> dict:
         try:
             urlTX = self.base_url + "/v1/balance/blockchain"
-            r = requests.get(
-                urlTX, headers=self.headers, verify=self.cert_path
-            )
+            r = requests.get(urlTX, headers=self.headers, verify=self.cert_path)
             return r.json()
         except Exception as e:
             self.logger.error(
                 "Error when recieving requests for balance channel: {}".format(str(e))
             )
             return None
+
     @staticmethod
     def convert_sum_to_text(sum_dict: dict) -> str:
         sum_btc = "{:.8f}".format(sum_dict["sum_btc"])

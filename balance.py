@@ -26,10 +26,11 @@ def main():
         config["VERIFY_CERT"] == "True",
         logger,
     )
-    #res = api.balance_as_dict()
-    #db.write_balance(res)
-    #db.write_channel_backup(res, logger)
+    # res = api.balance_as_dict()
+    # db.write_balance(res)
+    # db.write_channel_backup(res, logger)
     print(str(db.get_balance()))
+
 
 if __name__ == "__main__":
     main()

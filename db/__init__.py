@@ -307,21 +307,16 @@ class DB:
             )
         return result
 
-    def write_balance(self,data:dict)->None:
+    def write_balance(self, data: dict) -> None:
         query = """
                 INSERT INTO public.balance (unix_timestamp, inbound_sats, outbound_sats, onchain, pending_open_balance)
                 VALUES(NOW(), %s, %s, %s, %s);
                 """
-        values = (
-            data["inbound"],
-            data["outbound"],
-            data["onchain"],
-            data["pending"]
-        )
+        values = (data["inbound"], data["outbound"], data["onchain"], data["pending"])
         self.cursor.execute(query, values)
         self.conn.commit()
 
-    def get_balance(self)->dict:
+    def get_balance(self) -> dict:
         query = """
                 SELECT unix_timestamp, inbound_sats, outbound_sats, onchain, pending_open_balance 
                 FROM public.balance
@@ -335,8 +330,9 @@ class DB:
             "inbound": res[1],
             "outbound": res[2],
             "onchain": res[3],
-            "pending": res[4]
+            "pending": res[4],
         }
+
     def __yesterday_today_tuple(self) -> tuple:
         today_date = date.today().strftime("%Y-%m-%d")
         yesterday_date = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")

@@ -12,6 +12,9 @@ from sqlalchemy import values
 
 
 class DB:
+    SATS_TO_BTC = 100000000
+    MSATS_TO_SATS = 1000
+
     def __init__(
         self, db: str, user: str, password: str, host: str, port: int = 5432
     ) -> None:
@@ -239,8 +242,10 @@ class DB:
                     unix_timestamp < %s;
                 """
         values = (yesterday_date, today_date)
-        
-        return self.__parse_res_value_float(self.__request_query_fetch_one(query, values) / 100000000)
+
+        return self.__parse_res_value_float(
+            self.__request_query_fetch_one(query, values) / self.SATS_TO_BTC
+        )
 
     def get_fee_yesterday_sats(self) -> int:
         yesterday_date, today_date = self.__yesterday_today_tuple()
@@ -251,19 +256,26 @@ class DB:
                     unix_timestamp < %s;
                 """
         values = (yesterday_date, today_date)
-        return self.__parse_res_value(self.__request_query_fetch_one(query, values) / 1000)
+        return self.__parse_res_value(
+            self.__request_query_fetch_one(query, values) / self.MSATS_TO_SATS
+        )
 
     def get_sum_routing_all(self) -> float:
         query = """
                 SELECT sum(amount_out_sats) FROM routing;
                 """
-        return float(self.__parse_res_value_float((self.__request_query_fetch_one(query, None))) / 100000000)
+        return float(
+            self.__parse_res_value_float((self.__request_query_fetch_one(query, None)))
+            / self.SATS_TO_BTC
+        )
 
     def get_fee_routing_all_sats(self) -> str:
         query = """
                 SELECT sum(fee_milisats) FROM routing; 
                 """
-        return self.__parse_res_value(self.__request_query_fetch_one(query, None) / 1000)
+        return self.__parse_res_value(
+            self.__request_query_fetch_one(query, None) / self.MSATS_TO_SATS
+        )
 
     def get_tx_routing_count_all(self) -> int:
         query = """
@@ -333,16 +345,19 @@ class DB:
             "onchain": res[3],
             "pending": res[4],
         }
-    def __parse_res_value(self,data:object)->int:
+
+    def __parse_res_value(self, data: object) -> int:
         if data is None:
             return int(0)
         else:
             return int(data)
-    def __parse_res_value_float(self,data:object)->float:
+
+    def __parse_res_value_float(self, data: object) -> float:
         if data is None:
             return float(0)
         else:
             return float(data)
+
     def __yesterday_today_tuple(self) -> tuple:
         today_date = date.today().strftime("%Y-%m-%d")
         yesterday_date = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")

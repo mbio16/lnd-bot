@@ -26,19 +26,19 @@ class Message_creator:
 
     def __routing_all(self) -> str:
         value = self.__btc_format(self.db.get_sum_routing_all())
-        return "Routing all [BTC]: \t{}\n".format(value)
+        return "Routing [BTC]: \t{}\n".format(value)
 
     def __fee_all(self) -> str:
         value = self.__sats_format(self.db.get_fee_routing_all_sats())
-        return "Fee all [sats]: \t{}\n".format(value)
+        return "Fee [sats]: \t{}\n".format(value)
 
     def __routing_yesterday(self) -> str:
         value = self.__btc_format(self.db.get_sum_routing_yesterday())
-        return "Routing yesterday [BTC]: \t{}\n".format(value)
+        return "Routing [BTC]: \t{}\n".format(value)
 
     def __fee_yesterday(self) -> str:
         value = self.__sats_format(self.db.get_fee_yesterday_sats())
-        return "Fee yesterday [sats]: \t{}\n".format(value)
+        return "Fee [sats]: \t{}\n".format(value)
 
     def __count_routing_tx_all(self) -> str:
         value = self.__sats_format(self.db.get_tx_routing_count_all())
@@ -47,7 +47,7 @@ class Message_creator:
 
     def __count_routing_tx_yesterday(self) -> str:
         value = self.__sats_format(self.db.get_tx_routing_count_yesterday())
-        return "TX: \t{}\n".format(value)
+        return "TX: \t\t\t\n".format(value)
 
     def balance(self) -> str:
         res = self.db.get_balance()
@@ -89,13 +89,13 @@ class Message_creator:
         message += "{}\n".format(self.__line())
         return message
 
-    def summary_yesterday(self)->str:
+    def summary_yesterday(self) -> str:
         message = "Summary yersterday:"
         message += "\n{}\n".format(self.__line())
         message += "{}".format(self.__count_routing_tx_yesterday())
         message += "{}".format(self.__routing_yesterday())
         message += "{}\n".format(self.__fee_yesterday())
-        
+        return message
 
     def __str__(self) -> str:
         message = self.initial_info()

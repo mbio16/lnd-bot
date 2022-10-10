@@ -323,7 +323,7 @@ class LND_api:
     def balance_as_dict(self) -> dict:
         result = dict()
         res1 = self.__get_onchain_balance()
-        result["outbound"] = int(res1["total_balance"])
+        result["onchain"] = int(res1["total_balance"])
         res2 = self.__get_ln_balance()
         result["inbound"] = int(res2["local_balance"]["sat"])
         result["outbound"] = int(res2["remote_balance"]["sat"])

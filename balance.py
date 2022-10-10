@@ -6,7 +6,7 @@ from logger import Logger
 import locale
 from dotenv import dotenv_values
 import requests
-
+from message_creator import Message_creator
 
 def main():
     locale.setlocale(locale.LC_ALL, "")
@@ -26,10 +26,11 @@ def main():
         config["VERIFY_CERT"] == "True",
         logger,
     )
-    # res = api.balance_as_dict()
-    # db.write_balance(res)
-    # db.write_channel_backup(res, logger)
-    print(str(db.get_balance()))
+    message = Message_creator(db,api,logger)
+    res = api.balance_as_dict()
+    db.write_balance(res)
+    print(str(res))
+    print(str(message.balance()))
 
 
 if __name__ == "__main__":

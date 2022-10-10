@@ -11,40 +11,49 @@ class Message_creator:
         self.lnd_api = lnd_api
 
     def __date_str(self) -> str:
-        return "Date: {} \n".format(date.today().strftime("%Y-%m-%d"))
+        return "Date: \t{} \n".format(date.today().strftime("%Y-%m-%d"))
 
     def __active_channels(self) -> str:
-        return "Active channels: {} \n".format(self.api.get_num_active_channels())
+        return "Active channels: \t{} \n".format(self.api.get_num_active_channels())
 
     def __inactive_channels(self) -> str:
-        return "Inactive channels: {} \n".format(
+        return "Inactive channels: \t{} \n".format(
             str(self.api.get_num_passive_channels())
         )
 
     def routing_all(self) -> str:
         value = self.__btc_format(self.db.get_sum_routing_all())
-        return "Routing all [BTC]: {} \n".format(value)
+        return "Routing all [BTC]: \t{} \n".format(value)
 
     def fee_all(self) -> str:
         value = self.__sats_format(self.db.get_fee_routing_all_sats())
-        return "Fee all [sats]: {} \n".format(value)
+        return "Fee all [sats]: \t{} \n".format(value)
 
     def routing_yesterday(self) -> str:
         value = self.__btc_format(self.db.get_sum_routing_yesterday())
-        return "Routing yesterday [BTC]: {} \n".format(value)
+        return "Routing yesterday [BTC]: \t{} \n".format(value)
 
     def fee_yesterday(self) -> str:
         value = self.__sats_format(self.db.get_fee_yesterday_sats())
-        return "Fee yesterday [sats]: {} \n".format(value)
+        return "Fee yesterday [sats]: \t{} \n".format(value)
 
     def count_routing_tx_all(self) -> str:
         value = self.__sats_format(self.db.get_tx_routing_count_all())
-        return "TXs: {}".format(value)
+        return "TXs: \t{}".format(value)
 
     def count_routing_tx_yesterday(self) -> str:
         value = self.__sats_format(self.db.get_tx_routing_count_yesterday())
-        return "TX: {}".format(value)
+        return "TX: \t{}".format(value)
 
+    def balance(self)->str:
+        res = self.db.get_balance()
+        message = ""
+        message += "Date: \t\t{} \n".format(res["date"])
+        message += "Inbound: \t{} \n".format(self.__sats_format(res["inbound"]))
+        message += "Outbound: \t{} \n".format(self.__sats_format(res["outbound"]))
+        message += "Onchain: \t{} \n".format(self.__sats_format(res["onchain"]))
+        message += "Pending: \t{} \n".format(self.__sats_format(res["pending"]))
+        return message 
     def __btc_format(self, value: float) -> str:
         return "{:.8f}".format(value)
 

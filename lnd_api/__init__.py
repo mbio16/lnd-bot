@@ -4,9 +4,6 @@ from datetime import date, datetime
 from datetime import timedelta
 from logger import Logger
 import time
-import locale
-
-locale.setlocale(locale.LC_ALL, "")
 
 
 class LND_api:

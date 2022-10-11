@@ -5,10 +5,18 @@ from db import DB
 import locale
 from dotenv import dotenv_values
 import requests
+from logger import Logger
 
+def routing(api:LND_api,db:DB,logger:Logger)->None:
+    try:
+        time = db.get_youngest_unixtimestamp_routing_tx()
+        routing_txs = api.routing_since_time_as_dict(time)
+        db.write_tx_to_db(routing_txs, logger)
+    except Exception as e:
+        logger.error("Routing error: ".format(str(e)))
+    
 
 def main():
-    locale.setlocale(locale.LC_ALL, "")
     config = dotenv_values(".env")
 
     api = LND_api(
@@ -29,8 +37,16 @@ def main():
         config["POSTGRES_PASSWORD"],
         config["POSTGRES_HOST"],
     )
-    content_list = api.routing_yesterday_get_all_as_dict()
-    db.write_tx_to_db(content_list)
+    logger = Logger(
+        config["LOG_FILE"], 
+        db,
+        loggin_level=config["LOG_LEVEL"]
+    )
+    
+    #ROUTING
+    routing(api,db,logger)
+    
+        
 
 
 if __name__ == "__main__":

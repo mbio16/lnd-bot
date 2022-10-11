@@ -98,6 +98,8 @@ class LND_api:
             result_list = result_list + content["forwarding_events"]
             if len(content["forwarding_events"]) < self.NUM_MAX_INVOICES:
                 break
+            else:
+                start_time_unix = int(content["forwarding_events"][-1]["timestamp"])
         result_list = self.__generate_aliases_for_channels(result_list)
         self.logger.debug(
             "Parsing request from node with aliases: {}".format(

@@ -51,13 +51,6 @@ CREATE TABLE public.log_type (
 	CONSTRAINT log_type_pk PRIMARY KEY (id)
 );
 
-
--- public.payments definition
-
--- Drop table
-
--- DROP TABLE public.payments;
-
 CREATE TABLE public.payments (
 	id serial4 NOT NULL,
 	value int8 NULL,
@@ -66,12 +59,12 @@ CREATE TABLE public.payments (
 	fee int8 NULL,
 	fee_milisat int8 NULL,
 	status varchar NULL,
+	index_offset int8 NULL,
 	CONSTRAINT payments_pk PRIMARY KEY (id)
 );
 CREATE INDEX payments_creation_date_idx ON public.payments USING btree (creation_date);
 CREATE INDEX payments_id_idx ON public.payments USING btree (id);
 CREATE INDEX payments_value_idx ON public.payments USING btree (value);
-
 
 -- public.logs definition
 
@@ -158,7 +151,7 @@ AS SELECT routing.unix_timestamp,
 
 
 CREATE TABLE public.channel_backup (
-	id int4 NOT NULL DEFAULT nextval('newtable_id_seq'::regclass),
+	id serial4 NOT NULL,
 	date_creation timestamp NULL,
 	"data" json NULL,
 	CONSTRAINT channel_bc_pk PRIMARY KEY (id)
@@ -167,7 +160,7 @@ CREATE INDEX newtable_date_creation_idx ON public.channel_backup USING btree (da
 CREATE INDEX newtable_id_idx ON public.channel_backup USING btree (id);
 
 CREATE TABLE public.balance (
-	id int4 NOT NULL DEFAULT nextval('newtable_id_seq1'::regclass),
+	id serial4 NOT NULL,
 	unix_timestamp timestamp NOT NULL,
 	inbound_sats int8 NOT NULL,
 	outbound_sats int8 NOT NULL,

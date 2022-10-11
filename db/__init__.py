@@ -215,6 +215,7 @@ class DB:
             self.cursor.execute(query, values)
         self.conn.commit()
 
+
     def write_channel_backup(self, data: dict, logger) -> None:
         logger.info("Writting channel backup to DB...")
         query = """

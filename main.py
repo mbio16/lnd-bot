@@ -35,8 +35,8 @@ def invoices(api: LND_api, db: DB, logger: Logger) -> None:
 def payments(api: LND_api, db: DB, logger: Logger) -> None:
     try:
         index_offset = db.get_last_index_offset()
-        routing_txs = api.payments_from_index_offset_as_dict(index_offset)
-        db.write_payments_to_db(routing_txs)
+        paymentns_txs = api.payments_from_index_offset_as_dict(index_offset)
+        db.write_payments_to_db(paymentns_txs)
     except Exception as e:
         logger.error("Payments error: {}".format(str(e)))
 
@@ -56,6 +56,7 @@ def main():
         config["POSTGRES_USER"],
         config["POSTGRES_PASSWORD"],
         config["POSTGRES_HOST"],
+        port = int(config["POSTGRES_PORT"])
     )
     logger = Logger(config["LOG_FILE"], db, loggin_level=config["LOG_LEVEL"])
     api = LND_api(
@@ -81,7 +82,10 @@ def main():
 
     # INVOICES
     invoices(api, db, logger)
-
+    
+    #PAYMENTS
+    payments(api, db, logger)
+    
     # BALANCE
     balance(api, db, logger)
 

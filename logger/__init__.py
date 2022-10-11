@@ -56,8 +56,6 @@ class Logger:
             self.__write_log_to_db(level, message)
             self.__write_log_to_file(level, message)
             self.__write_log_to_console(level, message)
-        else:
-            print("log level not met")
 
     def info(self, message: str) -> None:
         self.__log_new_message(self.INFO, message)

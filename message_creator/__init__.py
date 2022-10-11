@@ -46,7 +46,7 @@ class Message_creator:
 
     def __count_routing_tx_yesterday(self) -> str:
         value = self.__sats_format(self.db.get_tx_routing_count_yesterday())
-        return "TX: \t\t\t\n".format(value)
+        return "TX: \t\t\t{}\n".format(value)
 
     def balance(self) -> str:
         res = self.db.get_balance()

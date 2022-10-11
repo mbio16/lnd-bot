@@ -1,12 +1,7 @@
-from datetime import date
-
-from zmq import Message
 from lnd_api import LND_api
 from signal_cli import Signal_client
 from db import DB
-import locale
 from dotenv import dotenv_values
-import requests
 from logger import Logger
 from message_creator import Message_creator
 

@@ -69,7 +69,7 @@ def main():
         config["SIGNAL_SOURCE_NUMBER"],
         config["SIGNAL_RECIPIENTS"],
         config["SIGNAL_URL"],
-        logger
+        logger,
     )
 
     message_creator = Message_creator(db, api, logger)

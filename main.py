@@ -13,9 +13,15 @@ def routing(api:LND_api,db:DB,logger:Logger)->None:
         routing_txs = api.routing_since_time_as_dict(time)
         db.write_tx_to_db(routing_txs, logger)
     except Exception as e:
-        logger.error("Routing error: ".format(str(e)))
+        logger.error("Routing error: {}".format(str(e)))
     
-
+def channel_backup(api:LND_api,db:DB,logger:Logger)->None:
+    try:
+        res = api.channel_backup_as_dict()
+        db.write_channel_backup(res, logger)
+    except Exception as e:
+        logger.error("Channel backups error: {}".format(str(e)))
+        
 def main():
     config = dotenv_values(".env")
 
@@ -46,6 +52,8 @@ def main():
     #ROUTING
     routing(api,db,logger)
     
+    #CHANNEL BACKUP ERROR
+    channel_backup(api,db,logger)
         
 
 

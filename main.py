@@ -29,6 +29,14 @@ def invoices(api:LND_api,db:DB,logger:Logger)->None:
         db.write_invoices(res, logger)
     except Exception as e:
         logger.error("Invoices error: {}".format(str(e)))
+
+def payments(api:LND_api,db:DB,logger:Logger)->None:
+    try:
+        index_offset = db.get_last_index_offset()
+        routing_txs = api.payments_from_index_offset_as_dict(index_offset)
+        db.write_payments_to_db(routing_txs)
+    except Exception as e:
+        logger.error("Payments error: {}".format(str(e)))        
     
 def main():
     config = dotenv_values(".env")
@@ -63,7 +71,8 @@ def main():
     #CHANNEL BACKUP ERROR
     channel_backup(api,db,logger)
         
-
+    #INVOICES
+    invoices(api,db,logger)
 
 if __name__ == "__main__":
     main()

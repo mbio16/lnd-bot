@@ -22,6 +22,14 @@ def channel_backup(api:LND_api,db:DB,logger:Logger)->None:
     except Exception as e:
         logger.error("Channel backups error: {}".format(str(e)))
         
+def invoices(api:LND_api,db:DB,logger:Logger)->None:
+    try:
+        min_offset = db.delete_all_invoices_that_are_open(logger)
+        res = api.invoices_since_last_offset_as_list(min_offset)
+        db.write_invoices(res, logger)
+    except Exception as e:
+        logger.error("Invoices error: {}".format(str(e)))
+    
 def main():
     config = dotenv_values(".env")
 

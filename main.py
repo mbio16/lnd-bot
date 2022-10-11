@@ -6,7 +6,7 @@ import locale
 from dotenv import dotenv_values
 import requests
 from logger import Logger
-
+from message_creator import Message_creator
 def routing(api:LND_api,db:DB,logger:Logger)->None:
     try:
         time = db.get_youngest_unixtimestamp_routing_tx()
@@ -37,6 +37,13 @@ def payments(api:LND_api,db:DB,logger:Logger)->None:
         db.write_payments_to_db(routing_txs)
     except Exception as e:
         logger.error("Payments error: {}".format(str(e)))        
+
+def balance(api:LND_api,db:DB,logger:Logger)->None:
+    try:
+        res = api.balance_as_dict()
+        db.write_balance(res)    
+    except Exception as e:
+        logger.error("Balance error: {}".format(str(e)))
     
 def main():
     config = dotenv_values(".env")
@@ -74,5 +81,7 @@ def main():
     #INVOICES
     invoices(api,db,logger)
 
+    #BALANCE
+    balance(api,db,logger)
 if __name__ == "__main__":
     main()

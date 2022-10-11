@@ -101,6 +101,7 @@ class Message_creator:
         message += self.balance()
         message += self.summary_all_time()
         message += self.summary_yesterday()
+        message += self.routing_events()
         return message
 
     def __line(self) -> str:

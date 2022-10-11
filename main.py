@@ -1,4 +1,6 @@
 from datetime import date
+
+from zmq import Message
 from lnd_api import LND_api
 from signal_cli import Signal_client
 from db import DB
@@ -47,19 +49,6 @@ def balance(api:LND_api,db:DB,logger:Logger)->None:
     
 def main():
     config = dotenv_values(".env")
-
-    api = LND_api(
-        config["URL"],
-        config["MACAROON"],
-        config["CERT_PATH"],
-        config["VERIFY_CERT"] == "True",
-    )
-    signal = Signal_client(
-        config["SIGNAL_SOURCE_NUMBER"],
-        config["SIGNAL_RECIPIENTS"],
-        config["SIGNAL_URL"],
-    )
-
     db = DB(
         config["POSTGRES_DATABASE"],
         config["POSTGRES_USER"],
@@ -71,7 +60,25 @@ def main():
         db,
         loggin_level=config["LOG_LEVEL"]
     )
-    
+    api = LND_api(
+        config["URL"],
+        config["MACAROON"],
+        config["CERT_PATH"],
+        config["VERIFY_CERT"] == "True",
+        logger
+    )
+    signal_client = Signal_client(
+        config["SIGNAL_SOURCE_NUMBER"],
+        config["SIGNAL_RECIPIENTS"],
+        config["SIGNAL_URL"],
+    )
+
+
+    message_creator = Message_creator(
+        db,
+        api,
+        logger
+    )
     #ROUTING
     routing(api,db,logger)
     
@@ -83,5 +90,8 @@ def main():
 
     #BALANCE
     balance(api,db,logger)
+    
+    #SEND SIGNAL MESSAGE
+    signal_client.send_string(str(message_creator))
 if __name__ == "__main__":
     main()

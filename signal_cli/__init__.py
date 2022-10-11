@@ -18,7 +18,7 @@ class Signal_client:
             "recipients": self.recipients,
         }
         self.logger.info("Preparing to send signal message...")
-        self.logger.debug("Data: {}".format(json.dumps(data, indent=1)))
+        self.logger.debug("Data: {}".format(json.dumps(data)))
         response = requests.post(self.url, data=json.dumps(data))
         if response.status_code == 200 or response.status_code == 201:
             self.logger.info("Response from signal OK.")
@@ -26,6 +26,6 @@ class Signal_client:
             self.logger.info("Response from signal FAIL.")
         self.logger.debug(
             "Response code: {} , response data: {}".format(
-                response.status_code, json.dumps(response.json(), indent=1)
+                response.status_code, json.dumps(response.json())
             )
         )

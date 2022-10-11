@@ -106,6 +106,7 @@ class DB:
         self.conn.commit()
 
     def write_invoices(self, invoices: list, logger) -> None:
+        logger.info("Start writing invoices to DB.")
         for invoice in invoices:
             query = """
                 INSERT INTO public.invoices (memo, value, value_milisats, settled, creation_date, settle_date, state, expiry)

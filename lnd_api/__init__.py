@@ -88,12 +88,12 @@ class LND_api:
                 }
             else:
                 data = params_data
-            self.logger.debug("Data in requests: {}".format(json.dumps(data, indent=1)))
+            self.logger.debug("Data in requests: {}".format(json.dumps(data)))
             self.logger.info("Sending request to node.")
             content = self.__switch(data)
             self.logger.info("Parsing requests from node.")
             self.logger.debug(
-                "Parsing request from node: {}".format(json.dumps(content, indent=1))
+                "Parsing request from node: {}".format(json.dumps(content))
             )
             result_list = result_list + content["forwarding_events"]
             if len(content["forwarding_events"]) < self.NUM_MAX_INVOICES:
@@ -101,7 +101,7 @@ class LND_api:
         result_list = self.__generate_aliases_for_channels(result_list)
         self.logger.debug(
             "Parsing request from node with aliases: {}".format(
-                json.dumps(result_list, indent=1)
+                json.dumps(result_list)
             )
         )
         return result_list
@@ -225,7 +225,7 @@ class LND_api:
             }
             self.logger.info("Request for invoices offset: {}".format(current_offset))
             self.logger.debug(
-                "Request for invoices: {}".format(json.dumps(params, indent=1))
+                "Request for invoices: {}".format(json.dumps(params))
             )
 
             content_list = self.__invoices(params)
@@ -289,7 +289,7 @@ class LND_api:
         try:
             self.logger.debug(
                 "Sending requests for paymtns with params {}".format(
-                    json.dumps(params, indent=1)
+                    json.dumps(params)
                 )
             )
             urlTX = self.base_url + "/v1/payments"

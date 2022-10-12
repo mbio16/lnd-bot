@@ -7,8 +7,11 @@ services:
     volumes:
       - .env:/app/.env
       - ./certificate:/app/certificate
+    networks: 
+      - backend
     depends_on:
       - "postgres"
+
   postgres:
     # Official Postgres image from DockerHub (we use the last version)
     image: 'postgres:latest'
@@ -22,9 +25,13 @@ services:
       POSTGRES_DB: ${POSTGRES_DATABASE} 
     volumes: 
           - db:/var/lib/postgresql/data
+    networks: 
+      - backend
+
 volumes:
   db:
     driver: local
+
 networks:
   backend:
     driver: bridge

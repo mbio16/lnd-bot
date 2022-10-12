@@ -69,7 +69,7 @@ def main():
     signal_client = Signal_client(
         config["SIGNAL_SOURCE_NUMBER"],
         config["SIGNAL_RECIPIENTS"],
-        config["SIGNAL_URL"],
+        config["SIGNAL_BASE_URL"],
         logger,
     )
 

@@ -1,6 +1,8 @@
 # LND-bot
 
-LND client that connect to LN node and read stats. Reports day stats to Signal app throught Signal Client container.
+# INSTAL 
+
+
 
 ## .env
 

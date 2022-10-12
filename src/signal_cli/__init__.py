@@ -5,10 +5,10 @@ from logger import Logger
 
 
 class Signal_client:
-    def __init__(self, source_number: str, recipients: str, url: str, logger: Logger):
+    def __init__(self, source_number: str, recipients: str, base_url: str, logger: Logger):
         self.number = source_number
         self.recipients = json.loads(recipients)
-        self.url = url
+        self.url = base_url + "/v2/send"
         self.logger = logger
 
     def send_string(self, message: str) -> None:

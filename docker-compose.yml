@@ -7,3 +7,24 @@ services:
     volumes:
       - .env:/app/.env
       - ./certificate:/app/certificate
+    depends_on:
+      - "postgres"
+  postgres:
+    # Official Postgres image from DockerHub (we use the last version)
+    image: 'postgres:latest'
+    restart: always
+    container_name: lnd_bot-db
+    ports:
+      - ${POSTGRES_PORT}:5432
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD} 
+      POSTGRES_DB: ${POSTGRES_DATABASE} 
+    volumes: 
+          - db:/var/lib/postgresql/data
+volumes:
+  db:
+    driver: local
+networks:
+  backend:
+    driver: bridge

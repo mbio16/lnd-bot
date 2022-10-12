@@ -1,3 +1,3 @@
 #!/bin/bash
-cd /home/ubuntu/lnd-bot
+cd $LND_BOT_HOME
 python3 main.py

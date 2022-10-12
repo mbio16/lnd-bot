@@ -1,5 +1,4 @@
-import base64, codecs, json, requests
-from turtle import color
+import json, requests
 from datetime import date, datetime
 from datetime import timedelta
 from logger import Logger

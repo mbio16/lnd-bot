@@ -3,7 +3,7 @@ services:
   lnd_bot:
     build: .
     container_name: lnd_bot
-    #image: ### 
+    image: lnd_bot-image 
     volumes:
       - .env:/app/.env
       - ./certificate:/app/certificate

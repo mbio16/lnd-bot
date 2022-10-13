@@ -69,7 +69,7 @@ def main():
     signal_client = Signal_client(
         config["SIGNAL_SOURCE_NUMBER"],
         config["SIGNAL_RECIPIENTS"],
-        config["SIGNAL_URL"],
+        config["SIGNAL_BASE_URL"],
         logger,
     )
 
@@ -77,9 +77,12 @@ def main():
     # ROUTING
     routing(api, db, logger)
 
-    # CHANNEL BACKUP ERROR
-    channel_backup(api, db, logger)
-
+    # CHANNEL BACKUP
+    if(config["SAVE_CHANNEL_BACKUP"] == "True"):
+        logger.info("Channel backup config TRUE")
+        channel_backup(api, db, logger)
+    else:
+        logger.info("Channel backup config FALSE")
     # INVOICES
     invoices(api, db, logger)
     

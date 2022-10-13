@@ -1,0 +1,49 @@
+version: "3.9"
+services:
+  lnd_bot:
+    build: .
+    container_name: lnd_bot
+    image: lnd_bot-image 
+    volumes:
+      - .env:/app/.env
+      - ./certificate:/app/certificate:ro
+    networks: 
+      - backend
+    depends_on:
+      - "postgres"
+      - "signal-client"
+
+  postgres:
+    # Official Postgres image from DockerHub (we use the last version)
+    image: 'postgres:latest'
+    restart: always
+    container_name: lnd_bot-db
+    ports:
+      - ${POSTGRES_PORT}:5432
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD} 
+      POSTGRES_DB: ${POSTGRES_DATABASE} 
+    volumes: 
+          - db:/var/lib/postgresql/data
+    networks: 
+      - backend
+
+  signal-client:
+    image: bbernhard/signal-cli-rest-api:latest
+    container_name: lnd_bot-signal_client 
+    environment:
+      - MODE=normal
+    volumes:
+      - signal-config:/home/.local/share/signal-cli  
+    networks:
+      - backend
+volumes:
+  db:
+    driver: local
+  signal-config:
+    driver: local
+
+networks:
+  backend:
+    driver: bridge

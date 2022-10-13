@@ -106,3 +106,7 @@ GitHub.sublime-settings
 .history
 
 lnd.cert
+
+*.cert
+
+test-localy.sh

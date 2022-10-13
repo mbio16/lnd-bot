@@ -6,7 +6,7 @@ services:
     image: lnd_bot-image 
     volumes:
       - .env:/app/.env
-      - ./certificate:/app/certificate
+      - ./certificate:/app/certificate:ro
     networks: 
       - backend
     depends_on:

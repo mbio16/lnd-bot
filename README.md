@@ -7,6 +7,7 @@
 - go inside folder:
     - ` cd lnd-bot`
 - go inside certificate
+    - mkdir certrificate
     - cd certificate
     - copy tls.cert from lnd to this folder to validate self sign connection
 - create .env file

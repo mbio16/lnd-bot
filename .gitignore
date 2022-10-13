@@ -107,6 +107,6 @@ GitHub.sublime-settings
 
 lnd.cert
 
-certificate
+*.cert
 
 test-localy.sh

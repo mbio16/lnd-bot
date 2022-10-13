@@ -11,7 +11,7 @@ services:
       - backend
     depends_on:
       - "postgres"
-      - "singal-client"
+      - "signal-client"
 
   postgres:
     # Official Postgres image from DockerHub (we use the last version)

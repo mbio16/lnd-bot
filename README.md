@@ -15,19 +15,32 @@
 
 
 **SIGNAL_RECIPIENTS** = ["+xxxxxxxxxxxx"] #number with number code such as +xxx
+
 **SIGNAL_BASE_URL** = http://signal-client:8080 #if you want to use docker-compose variant, use this url
+
 **SIGNAL_SOURCE_NUMBER**=+xxxxxxxxxx #sending signal number, has to be registered in later steps
 **MACAROON** = xxxx #read only macaroon in hex format, can be obtained with `xxd -p -c 256 readonly.macaroon | tr -d '\n'`
+
 **SAVE_CHANNEL_BACKUP**=True #if you want to save channel backup to db just in case to have another backup
+
 **URL** = https://url:8080 #Rest port of your lnd node by default rest port is 8080
+
 **VERIFY_CERT**=True #verify lnd cert 
+
 **CERT_PATH**=./certificate/lnd.cert #path to lnd cert in repo, if you copy the lnd.cert from node, do not change path 
+
 **POSTGRES_HOST**=postgres #db address, if you use docker-composem, do not change
+
 **POSTGRES_PORT**=5432 # port, docker-compose do not change
+
 **POSTGRES_PASSWORD**=xxxx #password to db for user, in docker compose it will create user with this password
+
 **POSTGRES_USER**=ln # user to be created in db
+
 **POSTGRES_DATABASE**=lnd_routing #db name to be created 
+
 **LOG_FILE**=lndbot.log#filename to log, in docker container it will create file with this name
+
 **LOG_LEVEL**=INFO #level to log, possible DEBUG,INFO,WARNIGN,ERROR
 
 - start containers:

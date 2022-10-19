@@ -31,7 +31,8 @@ services:
 
   signal-client:
     image: bbernhard/signal-cli-rest-api:latest
-    container_name: lnd_bot-signal_client 
+    container_name: lnd_bot-signal_client
+    restart: always
     environment:
       - MODE=normal
     volumes:

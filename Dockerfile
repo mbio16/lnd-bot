@@ -20,5 +20,5 @@ RUN pip3 install -r requirements.txt
 ADD ./src .
 #RUN pip3 install  --user -r requirements.txt
 
-CMD ["python3","-u", "main.py"]
+CMD ["python3","-u", "main-lnd-rest-api.py"]
 

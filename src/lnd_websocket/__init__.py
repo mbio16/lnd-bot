@@ -71,4 +71,7 @@ class LND_websocket_client:
             "outgoing_amount_msats":int(message["link_fail_event"]["info"]["outgoing_amt_msat"]),
             "failure_detail":message["link_fail_event"]["failure_detail"]
         }
+        #HAS TO BE DONE
+            #CHECK IF CHANIDEXISTS
+            #SAVEPARAMS INTO DB       
         print(str(res_dict))

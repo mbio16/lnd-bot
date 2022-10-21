@@ -23,7 +23,7 @@ def main():
     )
     print(str(lnd_websocket))
     
-    lnd_websocket.test()
+    lnd_websocket.listen_for_htlc_stream()
 
 if __name__ == "__main__":
     main()

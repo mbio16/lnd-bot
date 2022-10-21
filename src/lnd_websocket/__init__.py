@@ -1,5 +1,7 @@
 import json
 from datetime import date
+
+from matplotlib.font_manager import json_dump
 from db import DB
 from logger import Logger
 import websocket
@@ -9,6 +11,10 @@ import ssl
 class LND_websocket_client:
     SATS_TO_BTC = 100000000
     MSATS_TO_SATS = 1000
+    RESULT = "result"
+    EVENT_TYPE = "event_type"
+    WIRE_FAILURE = "wire_failure"
+    LINK_FAIL_EVENT = "link_fail_event"
     def __init__(self,base_url:str,db: DB, cert_path: str, macaroon: str, logger: Logger) -> None:
         self.base_url = base_url.replace("https","wss")
         self.macaroon = macaroon
@@ -17,12 +23,12 @@ class LND_websocket_client:
         self.db = db
         self.headers = headers = {"Grpc-Metadata-macaroon": self.macaroon}
         self.sslopt = {"ca_cert_path" : self.cert_path}
+        websocket.enableTrace(True)
     def __str__(self) -> str:
         return self.base_url
     
-    def run_htlc_error(self):
-        websocket.enableTrace(True)
-
+    def listen_for_htlc_stream(self):
+        
         ws = websocket.WebSocketApp(self.base_url + "/v2/router/htlcevents",
                                 header=self.headers,
                                 on_open=lambda msg: self.on_open(msg),
@@ -31,17 +37,24 @@ class LND_websocket_client:
                                 on_close=lambda ws,close_status_code,close_msg: self.on_close(ws, close_status_code,close_msg)
                             )
 
-        ws.run_forever(sslopt={"cert_reqs": ssl.CERT_NONE})  # Set dispatcher to automatic reconnection  
+        ws.run_forever(sslopt={"cert_reqs": ssl.CERT_NONE})  
             
-    def on_message(self,ws,message):
-        print(str(message))
-
-    def on_error(self, ws,error):
+    def on_message(self,ws:websocket.WebSocketApp,message:str):
+        self.__parse_message(message)
+    
+    def on_error(self, ws:websocket.WebSocketApp,error:str):
         print(error)
 
-    def on_close(self,ws, close_status_code, close_msg):
-        self.logger.info("Clossing connection..{}".format(str(close_msg)))
-    def on_open(self,ws):
-        print("Opened connection")
+    def on_close(self,ws:websocket.WebSocketApp, close_status_code:int, close_msg:str):
+        self.logger.info("Clossing connection.. {} .. {}".format(str(close_msg),str(close_status_code)))
+    def on_open(self,ws:websocket.WebSocketApp):
+        self.logger.info("Opening connection to wss...")
 
-
+    def __parse_message(self,message:str):
+        res = json.loads(message)
+        res = res[self.RESULT]
+        try:
+            if res[self.EVENT_TYPE] == "FORWARD" and res[self.LINK_FAIL_EVENT][self.WIRE_FAILURE] == "TEMPORARY_CHANNEL_FAILURE":
+                print("failed htlc")
+        except:
+            self.logger.warning("Not HTLC fail message")

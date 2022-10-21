@@ -101,9 +101,7 @@ class LND_api:
                 start_time_unix = int(content["forwarding_events"][-1]["timestamp"])
         result_list = self.__generate_aliases_for_channels(result_list)
         self.logger.debug(
-            "Parsing request from node with aliases: {}".format(
-                json.dumps(result_list)
-            )
+            "Parsing request from node with aliases: {}".format(json.dumps(result_list))
         )
         return result_list
 
@@ -225,9 +223,7 @@ class LND_api:
                 "num_max_invoices": self.NUM_MAX_INVOICES,
             }
             self.logger.info("Request for invoices offset: {}".format(current_offset))
-            self.logger.debug(
-                "Request for invoices: {}".format(json.dumps(params))
-            )
+            self.logger.debug("Request for invoices: {}".format(json.dumps(params)))
 
             content_list = self.__invoices(params)
             sum_list.extend(content_list)
@@ -289,9 +285,7 @@ class LND_api:
     def __payments(self, params: dict) -> list:
         try:
             self.logger.debug(
-                "Sending requests for paymtns with params {}".format(
-                    json.dumps(params)
-                )
+                "Sending requests for paymtns with params {}".format(json.dumps(params))
             )
             urlTX = self.base_url + "/v1/payments"
             r = requests.get(

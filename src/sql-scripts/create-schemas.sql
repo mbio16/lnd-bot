@@ -171,6 +171,27 @@ CREATE TABLE public.balance (
 CREATE INDEX balance_unix_timestamp_idx ON public.balance USING btree (unix_timestamp DESC);
 
 
+
+CREATE TABLE public.failed_htlc (
+	id serial NOT NULL,
+	incoming_channel_id int8 NOT NULL,
+	outgoing_channel_id int8 NOT NULL,
+	"type" varchar NULL,
+	wire_failure varchar NULL,
+	failure_detail varchar NULL,
+	incoming_amount_msats int8 NOT NULL,
+	outgoing_amount_msats int8 NOT NULL,
+	unix_timestamp timestamp without time zone NOT NULL,
+	CONSTRAINT failed_htlc_pk PRIMARY KEY (id),
+	CONSTRAINT failed_htlc_fk FOREIGN KEY (incoming_channel_id) REFERENCES public.channels(channel_id),
+	CONSTRAINT failed_htlc_fk_1 FOREIGN KEY (outgoing_channel_id) REFERENCES public.channels(channel_id)
+);
+CREATE INDEX failed_htlc_incoming_channel_id_idx ON public.failed_htlc (incoming_channel_id);
+CREATE INDEX failed_htlc_outgoing_channel_id_idx ON public.failed_htlc (outgoing_channel_id);
+CREATE INDEX failed_htlc_outgoing_amount_msats_idx ON public.failed_htlc (outgoing_amount_msats);
+
+
+
 INSERT INTO public.log_type ("type") VALUES
 	 ('DEBUG'),
 	 ('INFO'),

@@ -151,6 +151,25 @@ CREATE INDEX failed_htlc_outgoing_channel_id_idx ON public.failed_htlc USING btr
 ALTER TABLE public.failed_htlc ADD CONSTRAINT failed_htlc_fk FOREIGN KEY (incoming_channel_id) REFERENCES public.channels(channel_id);
 ALTER TABLE public.failed_htlc ADD CONSTRAINT failed_htlc_fk_1 FOREIGN KEY (outgoing_channel_id) REFERENCES public.channels(channel_id);
 
+
+CREATE OR REPLACE VIEW public.failed_htlc_complete
+AS SELECT failed_htlc.incoming_channel_id,
+    chan1.alias AS alias_in,
+    chan1.remote_public_key AS public_key_in,
+    failed_htlc.outgoing_channel_id,
+    chan2.alias AS alias_out,
+    chan2.remote_public_key AS public_key_out,
+    failed_htlc.unix_timestamp,
+    failed_htlc.incoming_amount_msats,
+    failed_htlc.outgoing_amount_msats,
+    failed_htlc.event_type,
+    failed_htlc.wire_failure,
+    failed_htlc.failure_detail,
+    failed_htlc.incoming_amount_msats - failed_htlc.outgoing_amount_msats AS potential_fee_msats
+   FROM failed_htlc
+     LEFT JOIN channels chan1 ON failed_htlc.incoming_channel_id = chan1.channel_id
+     LEFT JOIN channels chan2 ON failed_htlc.outgoing_channel_id = chan2.channel_id;
+
 INSERT INTO public.log_type ("type") VALUES
 	 ('DEBUG'),
 	 ('INFO'),

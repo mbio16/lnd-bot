@@ -61,7 +61,7 @@ def main():
     logger = Logger(
         config["LOG_FILE"],
         db,
-        loggin_level=config["LOG_LEVEL"]
+        loggin_level=config["LOG_LEVEL"],
         host_name="rest-client"
         )
     

@@ -65,7 +65,8 @@ class LND_websocket_client:
         #    self.logger.error(str(ex))
 
     def __failed_htlc_message(self,message:dict)->None:
-        time = int(int(message["timestamp_ns"])/(1000000))
+        time = int(int(message["timestamp_ns"])/(1000000000))
+        print(str(time))
         res_dict = {
             "chan_in": int(message["incoming_channel_id"]),
             "chan_out": int(message["outgoing_channel_id"]),
@@ -80,7 +81,7 @@ class LND_websocket_client:
         self.__channel_in_db(res_dict["chan_in"])
         self.__channel_in_db(res_dict["chan_out"])
             #SAVEPARAMS INTO DB       
-        print(str(res_dict))
+        self.db.write_failed_htlc(res_dict)
     
     def __channel_in_db(self,channel_id:int)->None:
         if not self.db.is_channel_in_db(channel_id):

@@ -2,6 +2,8 @@ import psycopg2
 import json
 from datetime import datetime, date, timedelta
 
+from sqlalchemy import values
+
 # from logger import Logger
 
 
@@ -365,8 +367,23 @@ class DB:
             "pending": res[4],
         }
 
-    def write_failed_htlc(self,failed:dict)->None:
-        pass
+    def write_failed_htlc(self,failed_dict:dict)->None:
+        query = """
+                INSERT INTO public.failed_htlc (incoming_channel_id, outgoing_channel_id, event_type, wire_failure, failure_detail, incoming_amount_msats, outgoing_amount_msats, unix_timestamp) 
+                VALUES(%s,%s, %s, %s, %s, %s, %s, %s);
+                """
+        values = (
+            failed_dict["chan_in"],
+            failed_dict["chan_out"],
+            failed_dict["event_type"],
+            failed_dict["wire_failure"],
+            failed_dict["failure_detail"],
+            failed_dict["incoming_amount_msats"],
+            failed_dict["outgoing_amount_msats"],
+            failed_dict["time"]
+        )
+        self.cursor.execute(query,values)
+        self.conn.commit()
         
     def __parse_res_value(self, data: object) -> int:
         if data is None:

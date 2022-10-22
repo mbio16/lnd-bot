@@ -39,10 +39,10 @@ class DB:
     def write_tx_to_db(self, content_list: list, logger) -> None:
         logger.info("Start writting channels to DB.")
         for item in content_list:
-            self.__check_channel_in_db(
+            self.check_channel_in_db(
                 item["chan_id_in"], item["public_key_in"], item["chan_in_alias"], logger
             )
-            self.__check_channel_in_db(
+            self.check_channel_in_db(
                 item["chan_id_out"],
                 item["public_key_out"],
                 item["chan_out_alias"],
@@ -54,15 +54,16 @@ class DB:
             logger.info("Written TXs to DB.")
         logger.info("Done writting channels to DB.")
 
-    def __check_channel_in_db(
+    def check_channel_in_db(
         self, channel_id: int, public_key: str, alias: str, logger
     ) -> None:
-        # print(channel_id)
+        ''' print(channel_id)
         self.cursor.execute(
             "SELECT sum(channel_id) FROM channels WHERE channel_id = %s;", (channel_id,)
         )
         res = self.cursor.fetchone()
-        if res[0] is None:
+        if res[0] is None:'''
+        if not self.is_channel_in_db(channel_id):
             logger.info("Channel not in DB, writting it.")
             self.cursor.execute(
                 "INSERT INTO channels (channel_id,remote_public_key,alias) VALUES (%s,%s,%s);",
@@ -76,6 +77,20 @@ class DB:
             self.conn.commit()
         logger.info("Channel written to DB.")
 
+    def is_channel_in_db(self,channel_id:int)->bool:
+         # print(channel_id)
+        self.cursor.execute(
+            "SELECT sum(channel_id) FROM channels WHERE channel_id = %s;", (channel_id,)
+        )
+        res = self.cursor.fetchone()[0]
+        if res is None:
+            return False
+        elif res == 0:
+            return False
+        else:
+            return True
+            
+        
     def __write_routing_tx(self, content: dict, logger) -> None:
         query = """
         INSERT INTO public.routing 
@@ -350,6 +365,9 @@ class DB:
             "pending": res[4],
         }
 
+    def write_failed_htlc(self,failed:dict)->None:
+        pass
+        
     def __parse_res_value(self, data: object) -> int:
         if data is None:
             return int(0)
@@ -379,3 +397,5 @@ class DB:
             return 0
         else:
             return res
+
+    

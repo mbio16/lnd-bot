@@ -145,7 +145,7 @@ class LND_api:
                     chan_alias_in,
                     channel_capacity,
                     public_key_in,
-                ) = self.__get_nodes_in_channel(response["chan_id_in"])
+                ) = self.get_nodes_in_channel(response["chan_id_in"])
                 hash_mapa[response["chan_id_in"]] = chan_alias_in
 
             if response["chan_id_out"] in hash_mapa.keys():
@@ -155,7 +155,7 @@ class LND_api:
                     chan_alias_out,
                     channel_capacity,
                     public_key_out,
-                ) = self.__get_nodes_in_channel(response["chan_id_out"])
+                ) = self.get_nodes_in_channel(response["chan_id_out"])
                 hash_mapa[response["chan_id_out"]] = chan_alias_out
             response["chan_in_alias"] = chan_alias_in
             response["chan_out_alias"] = chan_alias_out
@@ -165,7 +165,7 @@ class LND_api:
             result_list.append(response)
         return result_list
 
-    def __get_nodes_in_channel(self, chan_id: str) -> tuple:
+    def get_nodes_in_channel(self, chan_id: str) -> tuple:
         url = self.base_url + "/v1/graph/edge/" + chan_id
         r = requests.get(url, headers=self.headers, verify=self.cert_path)
         # print(str(json.dumps(r.json(),indent=3)))

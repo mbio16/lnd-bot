@@ -1,9 +1,3 @@
--- public.channels definition
-
--- Drop table
-
--- DROP TABLE public.channels;
-
 CREATE TABLE public.channels (
 	channel_id int8 NOT NULL,
 	remote_public_key varchar NULL,
@@ -12,13 +6,6 @@ CREATE TABLE public.channels (
 );
 CREATE INDEX channels_alias_idx ON public.channels USING btree (alias);
 CREATE INDEX channels_remote_public_key_idx ON public.channels USING btree (remote_public_key);
-
-
--- public.invoices definition
-
--- Drop table
-
--- DROP TABLE public.invoices;
 
 CREATE TABLE public.invoices (
 	id serial4 NOT NULL,
@@ -37,13 +24,6 @@ CREATE INDEX invoices_settle_date_idx ON public.invoices USING btree (settle_dat
 CREATE INDEX invoices_settled_idx ON public.invoices USING btree (settled);
 CREATE INDEX invoices_state_idx ON public.invoices USING btree (state);
 CREATE INDEX invoices_value_idx ON public.invoices USING btree (value);
-
-
--- public.log_type definition
-
--- Drop table
-
--- DROP TABLE public.log_type;
 
 CREATE TABLE public.log_type (
 	id serial4 NOT NULL,
@@ -66,29 +46,20 @@ CREATE INDEX payments_creation_date_idx ON public.payments USING btree (creation
 CREATE INDEX payments_id_idx ON public.payments USING btree (id);
 CREATE INDEX payments_value_idx ON public.payments USING btree (value);
 
--- public.logs definition
-
--- Drop table
-
--- DROP TABLE public.logs;
-
 CREATE TABLE public.logs (
 	id serial4 NOT NULL,
 	log_type int2 NOT NULL,
 	log_timestamp timestamp NOT NULL,
 	message varchar NULL,
-	CONSTRAINT logs_pk PRIMARY KEY (id),
-	CONSTRAINT logs_fk FOREIGN KEY (log_type) REFERENCES public.log_type(id)
+	host_name varchar NULL,
+	CONSTRAINT logs_pk PRIMARY KEY (id)
 );
 CREATE INDEX logs_log_timestamp_idx ON public.logs USING btree (log_timestamp DESC);
 CREATE INDEX logs_log_type_idx ON public.logs USING btree (log_type);
 
 
--- public.routing definition
+ALTER TABLE public.logs ADD CONSTRAINT logs_fk FOREIGN KEY (log_type) REFERENCES public.log_type(id);
 
--- Drop table
-
--- DROP TABLE public.routing;
 
 CREATE TABLE public.routing (
 	unix_timestamp timestamp NOT NULL,
@@ -112,21 +83,15 @@ CREATE INDEX routing_fee_sats_idx ON public.routing USING btree (fee_sats);
 CREATE INDEX routing_id_idx ON public.routing USING btree (id);
 CREATE INDEX routing_unix_idx ON public.routing USING btree (unix_timestamp DESC);
 
-
--- VIEWS
--- public.log_view source
-
 CREATE OR REPLACE VIEW public.log_view
 AS SELECT logs.id,
     logs.log_type,
     log_type.type,
     logs.log_timestamp,
-    logs.message
+    logs.message,
+    logs.host_name
    FROM logs
      JOIN log_type ON logs.log_type = log_type.id;
-
-
--- public.routing_completed source
 
 CREATE OR REPLACE VIEW public.routing_completed
 AS SELECT routing.unix_timestamp,
@@ -146,9 +111,6 @@ AS SELECT routing.unix_timestamp,
    FROM routing
      LEFT JOIN channels chan1 ON routing.chan_id_in = chan1.channel_id
      LEFT JOIN channels chan2 ON routing.chan_id_out = chan2.channel_id;
-
-
-
 
 CREATE TABLE public.channel_backup (
 	id serial4 NOT NULL,
@@ -170,27 +132,24 @@ CREATE TABLE public.balance (
 );
 CREATE INDEX balance_unix_timestamp_idx ON public.balance USING btree (unix_timestamp DESC);
 
-
-
 CREATE TABLE public.failed_htlc (
-	id serial NOT NULL,
+	id serial4 NOT NULL,
 	incoming_channel_id int8 NOT NULL,
 	outgoing_channel_id int8 NOT NULL,
-	"type" varchar NULL,
+	event_type varchar NULL,
 	wire_failure varchar NULL,
 	failure_detail varchar NULL,
 	incoming_amount_msats int8 NOT NULL,
 	outgoing_amount_msats int8 NOT NULL,
-	unix_timestamp timestamp without time zone NOT NULL,
-	CONSTRAINT failed_htlc_pk PRIMARY KEY (id),
-	CONSTRAINT failed_htlc_fk FOREIGN KEY (incoming_channel_id) REFERENCES public.channels(channel_id),
-	CONSTRAINT failed_htlc_fk_1 FOREIGN KEY (outgoing_channel_id) REFERENCES public.channels(channel_id)
+	unix_timestamp timestamp NOT NULL,
+	CONSTRAINT failed_htlc_pk PRIMARY KEY (id)
 );
-CREATE INDEX failed_htlc_incoming_channel_id_idx ON public.failed_htlc (incoming_channel_id);
-CREATE INDEX failed_htlc_outgoing_channel_id_idx ON public.failed_htlc (outgoing_channel_id);
-CREATE INDEX failed_htlc_outgoing_amount_msats_idx ON public.failed_htlc (outgoing_amount_msats);
+CREATE INDEX failed_htlc_incoming_channel_id_idx ON public.failed_htlc USING btree (incoming_channel_id);
+CREATE INDEX failed_htlc_outgoing_amount_msats_idx ON public.failed_htlc USING btree (outgoing_amount_msats);
+CREATE INDEX failed_htlc_outgoing_channel_id_idx ON public.failed_htlc USING btree (outgoing_channel_id);
 
-
+ALTER TABLE public.failed_htlc ADD CONSTRAINT failed_htlc_fk FOREIGN KEY (incoming_channel_id) REFERENCES public.channels(channel_id);
+ALTER TABLE public.failed_htlc ADD CONSTRAINT failed_htlc_fk_1 FOREIGN KEY (outgoing_channel_id) REFERENCES public.channels(channel_id);
 
 INSERT INTO public.log_type ("type") VALUES
 	 ('DEBUG'),

@@ -9,10 +9,11 @@ class Logger:
     WARNING = "WARNING"
     ERROR = "ERROR"
 
-    def __init__(self, file_url: str, db: DB, loggin_level="INFO") -> None:
+    def __init__(self, file_url: str, db: DB, loggin_level="INFO",host_name="bot") -> None:
         self.file_url = file_url
         self.loggin_level = loggin_level
         self.db = db
+        self.host_name = host_name
         self.__check_or_create_file()
 
     def __check_or_create_file(self) -> None:
@@ -24,7 +25,7 @@ class Logger:
                 print("Path to file doesn not exists, can not make file...")
 
     def __write_log_to_db(self, level: str, message: str) -> None:
-        if not self.db.write_log(level, message):
+        if not self.db.write_log(level, message,self.host_name):
             self.__write_log_to_file("ERROR", "Could not write log to PostgresSQL")
 
     def __check_logging_level(self, level_fired: str) -> bool:
@@ -46,7 +47,7 @@ class Logger:
 
     def __create_log_line(self, level: str, message: str) -> str:
         now = datetime.now()
-        return "{} : {} : {}".format(now.strftime("%Y-%m-%d %H:%M:%S"), level, message)
+        return "{} : {} : {} : {}".format(now.strftime("%Y-%m-%d %H:%M:%S"),self.host_name, level, message)
 
     def __write_log_to_console(self, level: str, message: str) -> None:
         res = self.__create_log_line(level, message) + "\n"

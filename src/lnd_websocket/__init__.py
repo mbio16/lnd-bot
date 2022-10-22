@@ -55,18 +55,17 @@ class LND_websocket_client:
     def __parse_message(self,message:str)->None:
         res = json.loads(message)
         res = res[self.RESULT]
-        #try:
-        if res[self.EVENT_TYPE] == "FORWARD" and res[self.LINK_FAIL_EVENT][self.WIRE_FAILURE] == "TEMPORARY_CHANNEL_FAILURE":
+        try:
+            if res[self.EVENT_TYPE] == "FORWARD" and res[self.LINK_FAIL_EVENT][self.WIRE_FAILURE] == "TEMPORARY_CHANNEL_FAILURE":
                 self.logger.info("HTLC fail route message...saving to db")
                 self.__failed_htlc_message(res)
                 
-        #except Exception as ex:
-           # self.logger.info("Not HTLC fail route message... skipping")
+        except Exception as ex:
+           self.logger.info("Not HTLC fail route message... skipping")
         #    self.logger.error(str(ex))
 
     def __failed_htlc_message(self,message:dict)->None:
         time = int(int(message["timestamp_ns"])/(1000000000))
-        print(str(time))
         res_dict = {
             "chan_in": int(message["incoming_channel_id"]),
             "chan_out": int(message["outgoing_channel_id"]),

@@ -136,13 +136,13 @@ class DB:
             self.cursor.execute(query, values)
             self.conn.commit()
 
-    def write_log(self, level: str, message: str) -> bool:
+    def write_log(self, level: str, message: str,host_name:str) -> bool:
         try:
             query = """INSERT INTO public.logs 
-                            (log_type, log_timestamp, message) 
+                            (log_type, log_timestamp, message,host_name) 
                         VALUES
-                            ((SELECT id FROM log_type WHERE type=%s), now(),%s);"""
-            values = (level, message)
+                            ((SELECT id FROM log_type WHERE type=%s), now(),%s,%s);"""
+            values = (level, message,host_name)
             self.cursor.execute(query, values)
             self.conn.commit()
             return True

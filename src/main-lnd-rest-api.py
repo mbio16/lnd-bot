@@ -58,7 +58,13 @@ def main():
         config["POSTGRES_HOST"],
         port=int(config["POSTGRES_PORT"]),
     )
-    logger = Logger(config["LOG_FILE"], db, loggin_level=config["LOG_LEVEL"])
+    logger = Logger(
+        config["LOG_FILE"],
+        db,
+        loggin_level=config["LOG_LEVEL"]
+        host_name="rest-client"
+        )
+    
     api = LND_api(
         config["URL"],
         config["MACAROON"],

@@ -6,7 +6,7 @@ from db import DB
 from logger import Logger
 from lnd_api import LND_api
 import websocket
-import datetime
+from datetime import datetime
 import ssl
 
 class LND_websocket_client:
@@ -55,16 +55,17 @@ class LND_websocket_client:
     def __parse_message(self,message:str)->None:
         res = json.loads(message)
         res = res[self.RESULT]
-        try:
-            if res[self.EVENT_TYPE] == "FORWARD" and res[self.LINK_FAIL_EVENT][self.WIRE_FAILURE] == "TEMPORARY_CHANNEL_FAILURE":
+        #try:
+        if res[self.EVENT_TYPE] == "FORWARD" and res[self.LINK_FAIL_EVENT][self.WIRE_FAILURE] == "TEMPORARY_CHANNEL_FAILURE":
                 self.logger.info("HTLC fail route message...saving to db")
                 self.__failed_htlc_message(res)
                 
-        except Exception as ex:
+        #except Exception as ex:
            # self.logger.info("Not HTLC fail route message... skipping")
-            self.logger.error(str(ex))
+        #    self.logger.error(str(ex))
 
     def __failed_htlc_message(self,message:dict)->None:
+        time = int(int(message["timestamp_ns"])/(1000000))
         res_dict = {
             "chan_in": int(message["incoming_channel_id"]),
             "chan_out": int(message["outgoing_channel_id"]),
@@ -73,7 +74,7 @@ class LND_websocket_client:
             "incoming_amount_msats":int(message["link_fail_event"]["info"]["incoming_amt_msat"]),
             "outgoing_amount_msats":int(message["link_fail_event"]["info"]["outgoing_amt_msat"]),
             "failure_detail":message["link_fail_event"]["failure_detail"],
-            "unix_time_stamp":datetime.fromtimestamp(int(message["timestamp_ns"]))
+            "time":datetime.fromtimestamp(time)
         }
         #HAS TO BE DONE
         self.__channel_in_db(res_dict["chan_in"])

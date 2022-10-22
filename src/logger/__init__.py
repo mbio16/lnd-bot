@@ -46,7 +46,7 @@ class Logger:
 
     def __create_log_line(self, level: str, message: str) -> str:
         now = datetime.now()
-        return "{}:{}:{}".format(now.strftime("%Y-%m-%d %H:%M:%S"), level, message)
+        return "{} : {} : {}".format(now.strftime("%Y-%m-%d %H:%M:%S"), level, message)
 
     def __write_log_to_console(self, level: str, message: str) -> None:
         res = self.__create_log_line(level, message) + "\n"

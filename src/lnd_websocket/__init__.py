@@ -1,7 +1,6 @@
 import json
 from datetime import date
 
-from matplotlib.font_manager import json_dump
 from db import DB
 from logger import Logger
 from lnd_api import LND_api
@@ -23,15 +22,26 @@ class LND_websocket_client:
         self.logger = logger
         self.db = db
         self.headers = headers = {"Grpc-Metadata-macaroon": self.macaroon}
-        self.sslopt = {"ca_cert_path" : self.cert_path}
         self.lnd_api = lnd_api
+        self.ssl_context = None
+        self.ssl_opt = None
+        self.__setup_ssl_context()
         websocket.enableTrace(True)
     def __str__(self) -> str:
         return self.base_url
     
+    def __setup_ssl_context(self)->None:
+        context = ssl.SSLContext() 
+        context.verify_mode = ssl.CERT_OPTIONAL 
+        context.check_hostname = False
+
+        context.load_verify_locations(cafile=self.cert_path)
+        self.ssl_opt = {"context": context}
+        
     def listen_for_htlc_stream(self):
         
-        ws = websocket.WebSocketApp(self.base_url + "/v2/router/htlcevents",
+        ws = websocket.WebSocketApp(
+                                self.base_url + "/v2/router/htlcevents",
                                 header=self.headers,
                                 on_open=lambda msg: self.__on_open(msg),
                                 on_message=lambda ws,msg: self.__on_message(ws,msg),
@@ -39,8 +49,11 @@ class LND_websocket_client:
                                 on_close=lambda ws,close_status_code,close_msg: self.__on_close(ws, close_status_code,close_msg)
                             )
 
-        ws.run_forever(sslopt={"cert_reqs": ssl.CERT_NONE})  
-            
+        ws.run_forever(sslopt={"cert_reqs": ssl.CERT_NONE})
+        #print(str(self.ssl_opt))  
+        #print(str(self.cert_path))
+        #ws.run_forever(sslopt={"check_hostname": False})
+        
     def __on_message(self,ws:websocket.WebSocketApp,message:str):
         self.__parse_message(message)
     

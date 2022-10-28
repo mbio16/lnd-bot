@@ -33,7 +33,7 @@ services:
     # Official Postgres image from DockerHub (we use the last version)
     image: 'postgres:latest'
     restart: always
-    container_name: mbio16/lnd_bot-db
+    container_name: lnd_bot-db
     ports:
       - ${POSTGRES_PORT}:5432
     environment:
@@ -47,7 +47,7 @@ services:
 
   signal-client:
     image: bbernhard/signal-cli-rest-api:latest
-    container_name: mbio16/lnd_bot-signal_client
+    container_name: lnd_bot-signal_client
     restart: always
     environment:
       - MODE=normal

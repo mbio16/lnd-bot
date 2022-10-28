@@ -21,6 +21,7 @@ services:
       dockerfile: DockerfileWebsocketClient
     container_name: lnd_websocket_client
     image: mbio16/lnd_websocket_client
+    restart: always
     volumes:
       - .env:/app/.env:ro
       - ./certificate:/app/certificate:ro

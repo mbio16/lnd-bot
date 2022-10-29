@@ -1,7 +1,6 @@
 import psycopg2
 import json
 from datetime import datetime, date, timedelta
-
 # from logger import Logger
 
 
@@ -39,10 +38,10 @@ class DB:
     def write_tx_to_db(self, content_list: list, logger) -> None:
         logger.info("Start writting channels to DB.")
         for item in content_list:
-            self.__check_channel_in_db(
+            self.check_channel_in_db(
                 item["chan_id_in"], item["public_key_in"], item["chan_in_alias"], logger
             )
-            self.__check_channel_in_db(
+            self.check_channel_in_db(
                 item["chan_id_out"],
                 item["public_key_out"],
                 item["chan_out_alias"],
@@ -54,15 +53,16 @@ class DB:
             logger.info("Written TXs to DB.")
         logger.info("Done writting channels to DB.")
 
-    def __check_channel_in_db(
+    def check_channel_in_db(
         self, channel_id: int, public_key: str, alias: str, logger
     ) -> None:
-        # print(channel_id)
+        ''' print(channel_id)
         self.cursor.execute(
             "SELECT sum(channel_id) FROM channels WHERE channel_id = %s;", (channel_id,)
         )
         res = self.cursor.fetchone()
-        if res[0] is None:
+        if res[0] is None:'''
+        if not self.is_channel_in_db(channel_id):
             logger.info("Channel not in DB, writting it.")
             self.cursor.execute(
                 "INSERT INTO channels (channel_id,remote_public_key,alias) VALUES (%s,%s,%s);",
@@ -76,6 +76,20 @@ class DB:
             self.conn.commit()
         logger.info("Channel written to DB.")
 
+    def is_channel_in_db(self,channel_id:int)->bool:
+         # print(channel_id)
+        self.cursor.execute(
+            "SELECT sum(channel_id) FROM channels WHERE channel_id = %s;", (channel_id,)
+        )
+        res = self.cursor.fetchone()[0]
+        if res is None:
+            return False
+        elif res == 0:
+            return False
+        else:
+            return True
+            
+        
     def __write_routing_tx(self, content: dict, logger) -> None:
         query = """
         INSERT INTO public.routing 
@@ -119,13 +133,13 @@ class DB:
             self.cursor.execute(query, values)
             self.conn.commit()
 
-    def write_log(self, level: str, message: str) -> bool:
+    def write_log(self, level: str, message: str,host_name:str) -> bool:
         try:
             query = """INSERT INTO public.logs 
-                            (log_type, log_timestamp, message) 
+                            (log_type, log_timestamp, message,host_name) 
                         VALUES
-                            ((SELECT id FROM log_type WHERE type=%s), now(),%s);"""
-            values = (level, message)
+                            ((SELECT id FROM log_type WHERE type=%s), now(),%s,%s);"""
+            values = (level, message,host_name)
             self.cursor.execute(query, values)
             self.conn.commit()
             return True
@@ -209,7 +223,6 @@ class DB:
             self.cursor.execute(query, values)
         self.conn.commit()
 
-
     def write_channel_backup(self, data: dict, logger) -> None:
         logger.info("Writting channel backup to DB...")
         query = """
@@ -240,7 +253,8 @@ class DB:
         values = (yesterday_date, today_date)
 
         return self.__parse_res_value_float(
-            self.__request_query_fetch_one(query, values,disable_none_return=True) / self.SATS_TO_BTC
+            self.__request_query_fetch_one(query, values, disable_none_return=True)
+            / self.SATS_TO_BTC
         )
 
     def get_fee_yesterday_sats(self) -> int:
@@ -253,7 +267,8 @@ class DB:
                 """
         values = (yesterday_date, today_date)
         return self.__parse_res_value(
-            self.__request_query_fetch_one(query, values,disable_none_return=True) / self.MSATS_TO_SATS
+            self.__request_query_fetch_one(query, values, disable_none_return=True)
+            / self.MSATS_TO_SATS
         )
 
     def get_sum_routing_all(self) -> float:
@@ -261,7 +276,9 @@ class DB:
                 SELECT sum(amount_out_sats) FROM routing;
                 """
         return float(
-            self.__parse_res_value_float((self.__request_query_fetch_one(query, None,disable_none_return=True)))
+            self.__parse_res_value_float(
+                (self.__request_query_fetch_one(query, None, disable_none_return=True))
+            )
             / self.SATS_TO_BTC
         )
 
@@ -270,14 +287,17 @@ class DB:
                 SELECT sum(fee_milisats) FROM routing; 
                 """
         return self.__parse_res_value(
-            self.__request_query_fetch_one(query, None,disable_none_return=True) / self.MSATS_TO_SATS
+            self.__request_query_fetch_one(query, None, disable_none_return=True)
+            / self.MSATS_TO_SATS
         )
 
     def get_tx_routing_count_all(self) -> int:
         query = """
                 SELECT count(id) from routing;
                 """
-        return self.__parse_res_value(self.__request_query_fetch_one(query, None,disable_none_return=True))
+        return self.__parse_res_value(
+            self.__request_query_fetch_one(query, None, disable_none_return=True)
+        )
 
     def get_tx_routing_count_yesterday(self) -> int:
         query = """
@@ -288,7 +308,9 @@ class DB:
                 """
         yesterday_date, today_date = self.__yesterday_today_tuple()
         values = (yesterday_date, today_date)
-        return self.__parse_res_value(self.__request_query_fetch_one(query, values,disable_none_return=True))
+        return self.__parse_res_value(
+            self.__request_query_fetch_one(query, values, disable_none_return=True)
+        )
 
     def get_routing_events_yesterday(self) -> list:
         yesterday_date, today_date = self.__yesterday_today_tuple()
@@ -342,6 +364,24 @@ class DB:
             "pending": res[4],
         }
 
+    def write_failed_htlc(self,failed_dict:dict)->None:
+        query = """
+                INSERT INTO public.failed_htlc (incoming_channel_id, outgoing_channel_id, event_type, wire_failure, failure_detail, incoming_amount_msats, outgoing_amount_msats, unix_timestamp) 
+                VALUES(%s,%s, %s, %s, %s, %s, %s, %s);
+                """
+        values = (
+            failed_dict["chan_in"],
+            failed_dict["chan_out"],
+            failed_dict["event_type"],
+            failed_dict["wire_failure"],
+            failed_dict["failure_detail"],
+            failed_dict["incoming_amount_msats"],
+            failed_dict["outgoing_amount_msats"],
+            failed_dict["time"]
+        )
+        self.cursor.execute(query,values)
+        self.conn.commit()
+        
     def __parse_res_value(self, data: object) -> int:
         if data is None:
             return int(0)
@@ -359,13 +399,17 @@ class DB:
         yesterday_date = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")
         return yesterday_date, today_date
 
-    def __request_query_fetch_one(self, query: str, values: tuple,disable_none_return=False) -> object:
+    def __request_query_fetch_one(
+        self, query: str, values: tuple, disable_none_return=False
+    ) -> object:
         if values is None:
             self.cursor.execute(query)
         else:
             self.cursor.execute(query, values)
         res = self.cursor.fetchone()[0]
-        if disable_none_return  and res is None:
+        if disable_none_return and res is None:
             return 0
         else:
             return res
+
+    

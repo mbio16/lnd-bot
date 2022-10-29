@@ -1,17 +1,34 @@
 version: "3.9"
 services:
-  lnd_bot:
-    build: .
-    container_name: lnd_bot
-    image: lnd_bot-image 
+  lnd_rest_client:
+    build:
+      context: .
+      dockerfile: DockerfileRestClient
+    container_name: lnd_rest_client
+    image: mbio16/lnd_rest_client-image 
     volumes:
-      - .env:/app/.env
+      - .env:/app/.env:ro
       - ./certificate:/app/certificate:ro
     networks: 
       - backend
     depends_on:
       - "postgres"
       - "signal-client"
+      
+  lnd_websocket_client:
+    build:
+      context: .
+      dockerfile: DockerfileWebsocketClient
+    container_name: lnd_websocket_client
+    image: mbio16/lnd_websocket_client
+    restart: always
+    volumes:
+      - .env:/app/.env:ro
+      - ./certificate:/app/certificate:ro
+    networks: 
+      - backend
+    depends_on:
+      - "postgres"
 
   postgres:
     # Official Postgres image from DockerHub (we use the last version)

@@ -101,9 +101,7 @@ class LND_api:
                 start_time_unix = int(content["forwarding_events"][-1]["timestamp"])
         result_list = self.__generate_aliases_for_channels(result_list)
         self.logger.debug(
-            "Parsing request from node with aliases: {}".format(
-                json.dumps(result_list)
-            )
+            "Parsing request from node with aliases: {}".format(json.dumps(result_list))
         )
         return result_list
 
@@ -147,7 +145,7 @@ class LND_api:
                     chan_alias_in,
                     channel_capacity,
                     public_key_in,
-                ) = self.__get_nodes_in_channel(response["chan_id_in"])
+                ) = self.get_nodes_in_channel(response["chan_id_in"])
                 hash_mapa[response["chan_id_in"]] = chan_alias_in
 
             if response["chan_id_out"] in hash_mapa.keys():
@@ -157,7 +155,7 @@ class LND_api:
                     chan_alias_out,
                     channel_capacity,
                     public_key_out,
-                ) = self.__get_nodes_in_channel(response["chan_id_out"])
+                ) = self.get_nodes_in_channel(response["chan_id_out"])
                 hash_mapa[response["chan_id_out"]] = chan_alias_out
             response["chan_in_alias"] = chan_alias_in
             response["chan_out_alias"] = chan_alias_out
@@ -167,7 +165,7 @@ class LND_api:
             result_list.append(response)
         return result_list
 
-    def __get_nodes_in_channel(self, chan_id: str) -> tuple:
+    def get_nodes_in_channel(self, chan_id: str) -> tuple:
         url = self.base_url + "/v1/graph/edge/" + chan_id
         r = requests.get(url, headers=self.headers, verify=self.cert_path)
         # print(str(json.dumps(r.json(),indent=3)))
@@ -225,9 +223,7 @@ class LND_api:
                 "num_max_invoices": self.NUM_MAX_INVOICES,
             }
             self.logger.info("Request for invoices offset: {}".format(current_offset))
-            self.logger.debug(
-                "Request for invoices: {}".format(json.dumps(params))
-            )
+            self.logger.debug("Request for invoices: {}".format(json.dumps(params)))
 
             content_list = self.__invoices(params)
             sum_list.extend(content_list)
@@ -289,9 +285,7 @@ class LND_api:
     def __payments(self, params: dict) -> list:
         try:
             self.logger.debug(
-                "Sending requests for paymtns with params {}".format(
-                    json.dumps(params)
-                )
+                "Sending requests for paymtns with params {}".format(json.dumps(params))
             )
             urlTX = self.base_url + "/v1/payments"
             r = requests.get(

@@ -56,9 +56,15 @@ def main():
         config["POSTGRES_USER"],
         config["POSTGRES_PASSWORD"],
         config["POSTGRES_HOST"],
-        port = int(config["POSTGRES_PORT"])
+        port=int(config["POSTGRES_PORT"]),
     )
-    logger = Logger(config["LOG_FILE"], db, loggin_level=config["LOG_LEVEL"])
+    logger = Logger(
+        config["LOG_FILE"],
+        db,
+        loggin_level=config["LOG_LEVEL"],
+        host_name="rest-client"
+        )
+    
     api = LND_api(
         config["URL"],
         config["MACAROON"],
@@ -78,17 +84,17 @@ def main():
     routing(api, db, logger)
 
     # CHANNEL BACKUP
-    if(config["SAVE_CHANNEL_BACKUP"] == "True"):
+    if config["SAVE_CHANNEL_BACKUP"] == "True":
         logger.info("Channel backup config TRUE")
         channel_backup(api, db, logger)
     else:
         logger.info("Channel backup config FALSE")
     # INVOICES
     invoices(api, db, logger)
-    
-    #PAYMENTS
+
+    # PAYMENTS
     payments(api, db, logger)
-    
+
     # BALANCE
     balance(api, db, logger)
 

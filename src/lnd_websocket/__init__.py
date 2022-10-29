@@ -6,8 +6,7 @@ from logger import Logger
 from lnd_api import LND_api
 import websocket
 from datetime import datetime
-import ssl
-
+import os
 class LND_websocket_client:
     SATS_TO_BTC = 100000000
     MSATS_TO_SATS = 1000
@@ -31,12 +30,8 @@ class LND_websocket_client:
         return self.base_url
     
     def __setup_ssl_context(self)->None:
-        context = ssl.SSLContext() 
-        context.verify_mode = ssl.CERT_OPTIONAL 
-        context.check_hostname = False
-
-        context.load_verify_locations(cafile=self.cert_path)
-        self.ssl_opt = {"context": context}
+        os.environ["REQUESTS_CA_BUNDLE"] = self.cert_path
+        os.environ["SSL_CERT_FILE"] = self.cert_path
         
     def listen_for_htlc_stream(self):
         
@@ -48,11 +43,7 @@ class LND_websocket_client:
                                 on_error=lambda ws,msg: self.__on_error(ws,msg),
                                 on_close=lambda ws,close_status_code,close_msg: self.__on_close(ws, close_status_code,close_msg)
                             )
-
-        ws.run_forever(sslopt={"cert_reqs": ssl.CERT_NONE})
-        #print(str(self.ssl_opt))  
-        #print(str(self.cert_path))
-        #ws.run_forever(sslopt={"check_hostname": False})
+        ws.run_forever()
         
     def __on_message(self,ws:websocket.WebSocketApp,message:str):
         self.__parse_message(message)

@@ -36,7 +36,7 @@ class LND_api:
             content = r.json()
         except Exception as e:
             self.logger.error("Error when sending basic info: {}".format(str(e)))
-        self.alias = self.__parse_alias()
+        self.alias = self.__parse_alias(content)
         self.color = content["color"]
         self.pub_key = content["identity_pubkey"]
         self.height = content["block_height"]

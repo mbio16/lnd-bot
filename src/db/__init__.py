@@ -56,12 +56,6 @@ class DB:
     def check_channel_in_db(
         self, channel_id: int, public_key: str, alias: str, logger
     ) -> None:
-        ''' print(channel_id)
-        self.cursor.execute(
-            "SELECT sum(channel_id) FROM channels WHERE channel_id = %s;", (channel_id,)
-        )
-        res = self.cursor.fetchone()
-        if res[0] is None:'''
         if not self.is_channel_in_db(channel_id):
             logger.info("Channel not in DB, writting it.")
             self.cursor.execute(
@@ -397,6 +391,8 @@ class DB:
     def __yesterday_today_tuple(self) -> tuple:
         today_date = date.today().strftime("%Y-%m-%d")
         yesterday_date = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")
+        print("Today: " + str(today_date))
+        print("Yesterday:" + str(yesterday_date))
         return yesterday_date, today_date
 
     def __request_query_fetch_one(

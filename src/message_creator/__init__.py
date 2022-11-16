@@ -61,6 +61,9 @@ class Message_creator:
     def routing_events(self) -> str:
         res = self.db.get_routing_events_yesterday()
         message = ""
+        if len(res) > 50:
+            #skipp -> message for signal would be too long and fail
+            return message
         for item in res:
             message += "{}: from '{}' to '{}' amount {} for fee {:.2f}\n".format(
                 item["date"],

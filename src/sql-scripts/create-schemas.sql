@@ -174,9 +174,12 @@ AS SELECT failed_htlc.incoming_channel_id,
 CREATE OR REPLACE VIEW public.failed_htlc_summary_by_date
 AS SELECT round(sum(failed_htlc_complete.outgoing_amount_msats) / 1000::numeric) AS potential_outgoing_sats,
     round(sum(failed_htlc_complete.potential_fee_msats) / 1000::numeric) AS potential_fee_sats,
-    failed_htlc_complete.unix_timestamp::date AS unix_timestamp
+    failed_htlc_complete.unix_timestamp::date AS unix_timestamp,
+    count(*) as count_tx
    FROM failed_htlc_complete
   GROUP BY (failed_htlc_complete.unix_timestamp::date);
+
+
 INSERT INTO public.log_type ("type") VALUES
 	 ('DEBUG'),
 	 ('INFO'),

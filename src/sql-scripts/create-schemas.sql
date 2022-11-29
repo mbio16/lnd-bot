@@ -179,6 +179,15 @@ AS SELECT round(sum(failed_htlc_complete.outgoing_amount_msats) / 1000::numeric)
    FROM failed_htlc_complete
   GROUP BY (failed_htlc_complete.unix_timestamp::date);
 
+CREATE OR REPLACE VIEW public.routing_summary_by_date
+AS SELECT 
+	round(sum(amount_out_milisats) / 1000::numeric) AS routing_out_sats,
+    round(sum(fee_milisats) / 1000::numeric) AS routing_fee_sats,
+    unix_timestamp::date AS unix_timestamp,
+    count(*) AS count_tx
+   FROM routing
+  GROUP BY (unix_timestamp::date);
+  
 
 INSERT INTO public.log_type ("type") VALUES
 	 ('DEBUG'),

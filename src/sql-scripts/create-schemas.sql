@@ -168,8 +168,8 @@ AS SELECT failed_htlc.incoming_channel_id,
     failed_htlc.incoming_amount_msats - failed_htlc.outgoing_amount_msats AS potential_fee_msats
    FROM failed_htlc
      LEFT JOIN channels chan1 ON failed_htlc.incoming_channel_id = chan1.channel_id
-     LEFT JOIN channels chan2 ON failed_htlc.outgoing_channel_id = chan2.channel_id;
-
+     LEFT JOIN channels chan2 ON failed_htlc.outgoing_channel_id = chan2.channel_id
+	ORDER BY failed_htlc.unix_timestamp DESC;
 
 CREATE OR REPLACE VIEW public.failed_htlc_summary_by_date
 AS SELECT round(sum(failed_htlc_complete.outgoing_amount_msats) / 1000::numeric) AS potential_outgoing_sats,
@@ -177,7 +177,8 @@ AS SELECT round(sum(failed_htlc_complete.outgoing_amount_msats) / 1000::numeric)
     failed_htlc_complete.unix_timestamp::date AS unix_timestamp,
     count(*) as count_tx
    FROM failed_htlc_complete
-  GROUP BY (failed_htlc_complete.unix_timestamp::date);
+  GROUP BY (failed_htlc_complete.unix_timestamp::date)
+  ORDER BY (failed_htlc_complete.unix_timestamp::date) DESC;
 
 CREATE OR REPLACE VIEW public.routing_summary_by_date
 AS SELECT 

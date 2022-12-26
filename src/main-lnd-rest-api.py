@@ -4,7 +4,7 @@ from db import DB
 from dotenv import dotenv_values
 from logger import Logger
 from message_creator import Message_creator
-
+import traceback
 
 def routing(api: LND_api, db: DB, logger: Logger) -> None:
     try:

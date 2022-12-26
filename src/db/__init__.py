@@ -68,8 +68,21 @@ class DB:
                 )
             )
             self.conn.commit()
+        self.update_channel_alias(channel_id,alias)
         logger.info("Channel written to DB.")
-
+        
+        
+    def update_channel_alias(self, channel_id:int, alias:str)->None:
+        self.cursor.execute(
+            """SELECT alias FROM channels WHERE channel_id = %s;""",(channel_id,)
+        )
+        res = self.cursor.fetchone()[0]        
+        if not alias == res:
+            self.cursor.execute(
+                """UPDATE  channels SET alias=%s WHERE channel_id=%s;""",(alias,channel_id)
+                )
+            self.conn.commit()
+        
     def is_channel_in_db(self,channel_id:int)->bool:
          # print(channel_id)
         self.cursor.execute(

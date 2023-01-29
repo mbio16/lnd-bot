@@ -110,7 +110,8 @@ AS SELECT routing.unix_timestamp,
     routing.id
    FROM routing
      LEFT JOIN channels chan1 ON routing.chan_id_in = chan1.channel_id
-     LEFT JOIN channels chan2 ON routing.chan_id_out = chan2.channel_id;
+     LEFT JOIN channels chan2 ON routing.chan_id_out = chan2.channel_id
+ 	ORDER BY unix_timestamp DESC;
 
 CREATE TABLE public.channel_backup (
 	id serial4 NOT NULL,
@@ -187,7 +188,8 @@ AS SELECT
     unix_timestamp::date AS unix_timestamp,
     count(*) AS count_tx
    FROM routing
-  GROUP BY (unix_timestamp::date);
+  GROUP BY (unix_timestamp::date)
+  ORDER BY unix_timestamp DESC;
   
 
 INSERT INTO public.log_type ("type") VALUES

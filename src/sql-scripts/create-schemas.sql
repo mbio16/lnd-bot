@@ -231,3 +231,27 @@ CREATE TABLE public.htlc_events (
 
 ALTER TABLE public.htlc_events ADD CONSTRAINT htlc_events_fk1 FOREIGN KEY (incoming_channel_id) REFERENCES public.channels(channel_id);
 ALTER TABLE public.htlc_events ADD CONSTRAINT htlc_events_fk2 FOREIGN KEY (outgoing_channel_id) REFERENCES public.channels(channel_id);
+
+CREATE OR REPLACE VIEW public.channels_htlc_events
+AS SELECT 
+    incoming_channels.channel_id AS incoming_channel_id,
+    incoming_channels.remote_public_key AS incoming_remote_public_key,
+    incoming_channels.alias AS incoming_alias,
+    outgoing_channels.channel_id AS outgoing_channel_id,
+    outgoing_channels.remote_public_key AS outgoing_remote_public_key,
+    outgoing_channels.alias AS outgoing_alias,
+    htlc_events.id,
+    htlc_events.incoming_amt_msat,
+    htlc_events.outgoing_amt_msat,
+    htlc_events.routing_fee_msat,
+    htlc_events.routing_fee_sats,
+    htlc_events.incoming_amt_sats,
+    htlc_events.outgoing_amt_sats,
+    htlc_events.incoming_htlc_id,
+    htlc_events.outgoing_htlc_id,
+    htlc_events.event_time,
+    htlc_events.confirmed
+   FROM htlc_events
+     LEFT JOIN channels AS incoming_channels ON htlc_events.incoming_channel_id = incoming_channels.channel_id
+     LEFT JOIN channels AS outgoing_channels ON htlc_events.outgoing_channel_id = outgoing_channels.channel_id;
+

@@ -5,15 +5,16 @@ from lnd_websocket import LND_websocket_client
 from db import DB
 def main():
     """
-    This is the main function that initializes the necessary components and starts the websocket listener.
+    This is the main function. It initializes the necessary components and starts the websocket listener.
     
-    It first loads the configuration values from the .env file. Then, it initializes the database, logger, 
-    LND API, and LND websocket client with the appropriate configuration values.
+    The function now loads the configuration values from the .env file. Following this, it sets up the database, logger, 
+    LND API, and LND websocket client using the loaded configuration values.
     
-    Finally, it starts the websocket client to listen for HTLC streams.
+    The final step is to start the websocket client to listen for HTLC streams.
     """
     
     config = dotenv_values(".env")
+    
     db = DB(
         db=config["POSTGRES_DATABASE"],
         user=config["POSTGRES_USER"],
@@ -44,7 +45,6 @@ def main():
         send_routing_message=config["SEND_ROUTING_NOTIFICATION"] == "True",
         lnd_api=lnd_api,
         logger=logger,
-
     )
     
     

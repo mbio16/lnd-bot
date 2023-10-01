@@ -4,7 +4,14 @@ from lnd_api import LND_api
 from lnd_websocket import LND_websocket_client
 from db import DB
 def main():
+    """
+    This is the main function that initializes the necessary components and starts the websocket listener.
     
+    It first loads the configuration values from the .env file. Then, it initializes the database, logger, 
+    LND API, and LND websocket client with the appropriate configuration values.
+    
+    Finally, it starts the websocket client to listen for HTLC streams.
+    """
     
     config = dotenv_values(".env")
     db = DB(
@@ -29,12 +36,15 @@ def main():
         logger,
     )
     lnd_websocket = LND_websocket_client(
-        config["URL"],
-        db,
-        config["CERT_PATH"],
-        config["MACAROON"],
-        lnd_api,
-        logger   
+        base_url=config["URL"],
+        db=db,
+        cert_path=config["CERT_PATH"],
+        macaroon=config["MACAROON"],
+        verify_cert=config["VERIFY_CERT"] == "True",
+        send_routing_message=config["SEND_ROUTING_NOTIFICATION"] == "True"
+        lnd_api=lnd_api,
+        logger=logger,
+
     )
     
     

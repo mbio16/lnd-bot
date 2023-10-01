@@ -34,6 +34,7 @@ class LND_api:
         try:
             r = requests.get(urlInfo, headers=self.headers, verify=self.cert_path)
             content = r.json()
+            self.logger.debug("Message content: {}".format(str(content)))
         except Exception as e:
             self.logger.error("Error when sending basic info: {}".format(str(e)))
         self.alias = self.__parse_alias(content)

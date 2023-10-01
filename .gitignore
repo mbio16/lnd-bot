@@ -110,3 +110,4 @@ lnd.cert
 *.cert
 
 test-localy.sh
+.env*

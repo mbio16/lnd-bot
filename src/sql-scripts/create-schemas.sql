@@ -197,3 +197,37 @@ INSERT INTO public.log_type ("type") VALUES
 	 ('INFO'),
 	 ('WARNING'),
 	 ('ERROR');
+
+-- public.htlc_events definition
+
+-- Drop table
+
+-- DROP TABLE public.htlc_events;
+
+-- public.htlc_events definition
+
+-- Drop table
+
+-- DROP TABLE public.htlc_events;
+
+CREATE TABLE public.htlc_events (
+	id serial4 NOT NULL,
+	incoming_amt_msat int4 NULL,
+	outgoing_amt_msat int4 NULL,
+	routing_fee_msat int4 NULL,
+	routing_fee_sats float4 NULL,
+	incoming_amt_sats float4 NULL,
+	outgoing_amt_sats float4 NULL,
+	incoming_htlc_id int4 NULL,
+	outgoing_htlc_id int4 NULL,
+	event_time timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+	incoming_channel_id int8 NULL,
+	outgoing_channel_id int8 NULL,
+	confirmed bool NULL,
+	CONSTRAINT htlc_events_pkey PRIMARY KEY (id)
+);
+
+-- public.htlc_events foreign keys
+
+ALTER TABLE public.htlc_events ADD CONSTRAINT htlc_events_fk1 FOREIGN KEY (incoming_channel_id) REFERENCES public.channels(channel_id);
+ALTER TABLE public.htlc_events ADD CONSTRAINT htlc_events_fk2 FOREIGN KEY (outgoing_channel_id) REFERENCES public.channels(channel_id);

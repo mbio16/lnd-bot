@@ -421,4 +421,58 @@ class DB:
         else:
             return res
 
+    def save_forward_values_to_db(
+        self,
+        incoming_amt_msat: int,
+        outgoing_amt_msat: int,
+        routing_fee_msat: int,
+        routing_fee_sats: int,
+        incoming_amt_sats: int,
+        outgoing_amt_sats: int,
+        incoming_htlc_id: int,
+        outgoing_htlc_id: int,
+        incoming_channel_id:int,
+        outgoing_channel_id:int
+    ) -> None:
+        query = """
+            INSERT INTO htlc_events 
+            (incoming_amt_msat, outgoing_amt_msat, routing_fee_msat, routing_fee_sats, incoming_amt_sats, outgoing_amt_sats, incoming_htlc_id, outgoing_htlc_id,incoming_channel_id,outgoing_channel_id) 
+            VALUES(%s, %s, %s, %s, %s, %s, %s, %s,%s,%s);
+            """
+        values = (
+            incoming_amt_msat,
+            outgoing_amt_msat,
+            routing_fee_msat,
+            routing_fee_sats,
+            incoming_amt_sats,
+            outgoing_amt_sats,
+            incoming_htlc_id,
+            outgoing_htlc_id,
+            incoming_channel_id,
+            outgoing_channel_id
+        )
+        self.cursor.execute(query, values)
+        self.conn.commit()
+
+    def save_settled_routing(
+        self,
+        incoming_channel_id: int,
+        outgoing_channel_id: int,
+        incoming_htlc_id: int,
+        outgoing_htlc_id: int,
+    ) -> None:
+        query = """
+            UPDATE htlc_events 
+            SET confirmed = true
+            WHERE incoming_channel_id = %s AND outgoing_channel_id = %s AND incoming_htlc_id = %s AND outgoing_htlc_id = %s;
+            """
+        values = (
+            incoming_channel_id,
+            outgoing_channel_id,
+            incoming_htlc_id,
+            outgoing_htlc_id,
+        )
+        self.cursor.execute(query, values)
+        self.conn.commit()
+        
     

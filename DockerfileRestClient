@@ -2,11 +2,10 @@ FROM python:3.10-slim-buster
 LABEL maintainer="github.com/mbio16"
 LABEL version="2.0"
 
-
 RUN apt-get -y update
 RUN apt-get -y upgrade
-WORKDIR /app
 
+WORKDIR /app
 
 COPY requirements.txt requirements.txt
 

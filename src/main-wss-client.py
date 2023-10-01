@@ -15,25 +15,25 @@ def main():
     
     config = dotenv_values(".env")
     db = DB(
-        config["POSTGRES_DATABASE"],
-        config["POSTGRES_USER"],
-        config["POSTGRES_PASSWORD"],
-        config["POSTGRES_HOST"],
+        db=config["POSTGRES_DATABASE"],
+        user=config["POSTGRES_USER"],
+        password=config["POSTGRES_PASSWORD"],
+        host=config["POSTGRES_HOST"],
         port=int(config["POSTGRES_PORT"]),
     )
     
     logger = Logger(
-        config["LOG_FILE"], 
-        db, 
+        file_url=config["LOG_FILE"], 
+        db=db, 
         loggin_level=config["LOG_LEVEL"],
         host_name="websocket-client"       
     )
     lnd_api = LND_api(
-        config["URL"],
-        config["MACAROON"],
-        config["CERT_PATH"],
-        config["VERIFY_CERT"] == "True",
-        logger,
+        base_url=config["URL"],
+        macaroon=config["MACAROON"],
+        cert_path=config["CERT_PATH"],
+        verify_cert=config["VERIFY_CERT"] == "True",
+        logger=logger,
     )
     lnd_websocket = LND_websocket_client(
         base_url=config["URL"],

@@ -1,6 +1,7 @@
 import psycopg2
 import json
 from datetime import datetime, date, timedelta
+
 # from logger import Logger
 
 
@@ -68,23 +69,23 @@ class DB:
                 )
             )
             self.conn.commit()
-        self.update_channel_alias(channel_id,alias)
+        self.update_channel_alias(channel_id, alias)
         logger.info("Channel written to DB.")
-        
-        
-    def update_channel_alias(self, channel_id:int, alias:str)->None:
+
+    def update_channel_alias(self, channel_id: int, alias: str) -> None:
         self.cursor.execute(
-            """SELECT alias FROM channels WHERE channel_id = %s;""",(channel_id,)
+            """SELECT alias FROM channels WHERE channel_id = %s;""", (channel_id,)
         )
-        res = self.cursor.fetchone()[0]        
+        res = self.cursor.fetchone()[0]
         if not alias == res:
             self.cursor.execute(
-                """UPDATE  channels SET alias=%s WHERE channel_id=%s;""",(alias,channel_id)
-                )
+                """UPDATE  channels SET alias=%s WHERE channel_id=%s;""",
+                (alias, channel_id),
+            )
             self.conn.commit()
-        
-    def is_channel_in_db(self,channel_id:int)->bool:
-         # print(channel_id)
+
+    def is_channel_in_db(self, channel_id: int) -> bool:
+        # print(channel_id)
         self.cursor.execute(
             "SELECT sum(channel_id) FROM channels WHERE channel_id = %s;", (channel_id,)
         )
@@ -95,8 +96,7 @@ class DB:
             return False
         else:
             return True
-            
-        
+
     def __write_routing_tx(self, content: dict, logger) -> None:
         query = """
         INSERT INTO public.routing 
@@ -140,13 +140,13 @@ class DB:
             self.cursor.execute(query, values)
             self.conn.commit()
 
-    def write_log(self, level: str, message: str,host_name:str) -> bool:
+    def write_log(self, level: str, message: str, host_name: str) -> bool:
         try:
             query = """INSERT INTO public.logs 
                             (log_type, log_timestamp, message,host_name) 
                         VALUES
                             ((SELECT id FROM log_type WHERE type=%s), now(),%s,%s);"""
-            values = (level, message,host_name)
+            values = (level, message, host_name)
             self.cursor.execute(query, values)
             self.conn.commit()
             return True
@@ -371,7 +371,7 @@ class DB:
             "pending": res[4],
         }
 
-    def write_failed_htlc(self,failed_dict:dict)->None:
+    def write_failed_htlc(self, failed_dict: dict) -> None:
         query = """
                 INSERT INTO public.failed_htlc (incoming_channel_id, outgoing_channel_id, event_type, wire_failure, failure_detail, incoming_amount_msats, outgoing_amount_msats, unix_timestamp) 
                 VALUES(%s,%s, %s, %s, %s, %s, %s, %s);
@@ -384,11 +384,11 @@ class DB:
             failed_dict["failure_detail"],
             failed_dict["incoming_amount_msats"],
             failed_dict["outgoing_amount_msats"],
-            failed_dict["time"]
+            failed_dict["time"],
         )
-        self.cursor.execute(query,values)
+        self.cursor.execute(query, values)
         self.conn.commit()
-        
+
     def __parse_res_value(self, data: object) -> int:
         if data is None:
             return int(0)
@@ -431,8 +431,8 @@ class DB:
         outgoing_amt_sats: int,
         incoming_htlc_id: int,
         outgoing_htlc_id: int,
-        incoming_channel_id:int,
-        outgoing_channel_id:int
+        incoming_channel_id: int,
+        outgoing_channel_id: int,
     ) -> None:
         query = """
             INSERT INTO htlc_events 
@@ -449,7 +449,7 @@ class DB:
             incoming_htlc_id,
             outgoing_htlc_id,
             incoming_channel_id,
-            outgoing_channel_id
+            outgoing_channel_id,
         )
         self.cursor.execute(query, values)
         self.conn.commit()
@@ -474,8 +474,14 @@ class DB:
         )
         self.cursor.execute(query, values)
         self.conn.commit()
-        
-    def get_htlc_routing_confirmed(self, incoming_htlc_id: int, outgoing_htlc_id: int, incoming_channel_id: int, outgoing_channel_id: int) -> list:
+
+    def get_htlc_routing_confirmed(
+        self,
+        incoming_htlc_id: int,
+        outgoing_htlc_id: int,
+        incoming_channel_id: int,
+        outgoing_channel_id: int,
+    ) -> list:
         query = """
             SELECT 
                 incoming_alias,
@@ -486,7 +492,12 @@ class DB:
             FROM public.channels_htlc_events
             WHERE incoming_htlc_id = %s AND outgoing_htlc_id = %s AND incoming_channel_id = %s AND outgoing_channel_id = %s AND confirmed = true;
             """
-        values = (incoming_htlc_id, outgoing_htlc_id, incoming_channel_id, outgoing_channel_id)
+        values = (
+            incoming_htlc_id,
+            outgoing_htlc_id,
+            incoming_channel_id,
+            outgoing_channel_id,
+        )
         self.cursor.execute(query, values)
         response = self.cursor.fetchone()
         return {
@@ -495,5 +506,5 @@ class DB:
             "routing_fee_msat": response[2],
             "incoming_amt_sats": response[3],
             "outgoing_amt_sats": response[4],
-            "routing_fee_sat": float(response[2])/self.MSATS_TO_SATS
+            "routing_fee_sat": float(response[2]) / self.MSATS_TO_SATS,
         }

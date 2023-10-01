@@ -51,13 +51,14 @@ class LND_api:
             )
         )
 
-    def __parse_alias(self,content:dict)->str:
+    def __parse_alias(self, content: dict) -> str:
         result = None
         try:
             result = content["alias"]
         except:
             result = content["identity_pubkey"]
         return result
+
     def __str__(self) -> str:
         return self.alias
 

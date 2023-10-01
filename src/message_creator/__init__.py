@@ -62,7 +62,7 @@ class Message_creator:
         res = self.db.get_routing_events_yesterday()
         message = ""
         if len(res) > 50:
-            #skipp -> message for signal would be too long and fail
+            # skipp -> message for signal would be too long and fail
             return message
         for item in res:
             message += "{}: from '{}' to '{}' amount {} for fee {:.2f}\n".format(
@@ -100,14 +100,15 @@ class Message_creator:
         return message
 
     def reouting_htlc(self, response_dict: dict) -> str:
-        message = "New routing:\n"        
+        message = "New routing:\n"
         message += "Source channel: {},\nDestination channel: {},\nFee {} sats,\nAmount out: {} sats".format(
             response_dict["incoming_alias"],
             response_dict["outgoing_alias"],
             self.__sats_format(int(response_dict["routing_fee_sat"])),
-            self.__sats_format(int(response_dict["outgoing_amt_sats"])))
+            self.__sats_format(int(response_dict["outgoing_amt_sats"])),
+        )
         return message
-    
+
     def __str__(self) -> str:
         message = self.initial_info()
         message += self.balance()

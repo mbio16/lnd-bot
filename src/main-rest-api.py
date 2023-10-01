@@ -6,6 +6,7 @@ from logger import Logger
 from message_creator import Message_creator
 import traceback
 
+
 def routing(api: LND_api, db: DB, logger: Logger) -> None:
     try:
         time = db.get_youngest_unixtimestamp_routing_tx()
@@ -62,9 +63,9 @@ def main():
         config["LOG_FILE"],
         db,
         loggin_level=config["LOG_LEVEL"],
-        host_name="rest-client"
-        )
-    
+        host_name="rest-client",
+    )
+
     api = LND_api(
         config["URL"],
         config["MACAROON"],

@@ -162,6 +162,7 @@ class LND_websocket_client:
             outgoing_htlc_id=outgoing_htlc_id
         )
         if self.send_routing_message:
+            pass
             
         
 

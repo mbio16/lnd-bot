@@ -41,7 +41,7 @@ def main():
         cert_path=config["CERT_PATH"],
         macaroon=config["MACAROON"],
         verify_cert=config["VERIFY_CERT"] == "True",
-        send_routing_message=config["SEND_ROUTING_NOTIFICATION"] == "True"
+        send_routing_message=config["SEND_ROUTING_NOTIFICATION"] == "True",
         lnd_api=lnd_api,
         logger=logger,
 

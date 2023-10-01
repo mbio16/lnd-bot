@@ -13,6 +13,12 @@ import ssl
 
 
 class LND_websocket_client:
+    """
+    This class represents the LND websocket client.
+    It establishes a websocket connection to the LND API and listens for HTLC events.
+    The events are then processed and handled accordingly.
+    """
+
     SATS_TO_BTC = 100000000
     MSATS_TO_SATS = 1000
     RESULT = "result"
@@ -55,7 +61,7 @@ class LND_websocket_client:
         Returns:
         None
         """
-        
+
         self.base_url = base_url.replace("https", "wss")
         self.macaroon = macaroon
         self.cert_path = cert_path
@@ -84,7 +90,7 @@ class LND_websocket_client:
         Returns:
         dict: A dictionary with the SSL options for the websocket connection.
         """
-        
+
         os.environ["REQUESTS_CA_BUNDLE"] = self.cert_path
         os.environ["SSL_CERT_FILE"] = self.cert_path
         if self.verify_cert:
@@ -95,13 +101,13 @@ class LND_websocket_client:
     def listen_for_htlc_stream(self):
         """
         This function listens for HTLC (Hashed TimeLock Contract) events from the LND (Lightning Network Daemon) API.
-        It establishes a websocket connection to the LND API and listens for HTLC events. 
+        It establishes a websocket connection to the LND API and listens for HTLC events.
         The events are then processed and handled accordingly.
 
         Returns:
         None
         """
-        
+
         ws = websocket.WebSocketApp(
             self.base_url + "/v2/router/htlcevents",
             header=self.headers,
@@ -133,7 +139,7 @@ class LND_websocket_client:
         Returns:
         None
         """
-        
+
         self.__parse_message(message)
 
     def __on_error(self, ws: websocket.WebSocketApp, error: str) -> None:
@@ -150,7 +156,7 @@ class LND_websocket_client:
         Returns:
         None
         """
-        
+
         self.logger.error(str(error))
 
     def __on_close(
@@ -170,7 +176,7 @@ class LND_websocket_client:
         Returns:
         None
         """
-        
+
         self.logger.info(
             "Clossing connection.. {} .. {}".format(
                 str(close_msg), str(close_status_code)
@@ -179,31 +185,31 @@ class LND_websocket_client:
 
     def __on_open(self, ws: websocket.WebSocketApp) -> None:
         """
-            Handles the opening of the websocket connection.
+        Handles the opening of the websocket connection.
 
-            This function is called when the websocket connection is opened.
-            It logs a message indicating that the connection has been opened.
+        This function is called when the websocket connection is opened.
+        It logs a message indicating that the connection has been opened.
 
-            Parameters:
-            ws (websocket.WebSocketApp): The websocket connection object.
+        Parameters:
+        ws (websocket.WebSocketApp): The websocket connection object.
 
-            Returns:
-            None
-        """      
+        Returns:
+        None
+        """
         self.logger.info("Opening connection to wss...")
 
     def __parse_message(self, message: str) -> None:
         """
-            Parses the incoming message from the websocket connection.
+        Parses the incoming message from the websocket connection.
 
-            This function is called when a message is received from the websocket connection.
-            It parses the message and processes it accordingly.
+        This function is called when a message is received from the websocket connection.
+        It parses the message and processes it accordingly.
 
-            Parameters:
-            message (str): The received message.
+        Parameters:
+        message (str): The received message.
 
-            Returns:
-            None
+        Returns:
+        None
         """
         res = json.loads(message)
         res = res[self.RESULT]
@@ -214,17 +220,17 @@ class LND_websocket_client:
 
     def __check_if_fail_route_message(self, res: dict) -> None:
         """
-            Checks if the received message is a fail route message.
+        Checks if the received message is a fail route message.
 
-            This function is called to check if the received message is a fail route message.
-            If it is, it saves the message to the database.
+        This function is called to check if the received message is a fail route message.
+        If it is, it saves the message to the database.
 
-            Parameters:
-            res (dict): The received message.
+        Parameters:
+        res (dict): The received message.
 
-            Returns:
-            None
-        """       
+        Returns:
+        None
+        """
         try:
             if (
                 res[self.EVENT_TYPE] == self.FORWARD_VALUE
@@ -239,17 +245,17 @@ class LND_websocket_client:
 
     def __check_if_routing_message(self, res: dict) -> None:
         """
-            Checks if the received message is a routing message.
+        Checks if the received message is a routing message.
 
-            This function is called to check if the received message is a routing message.
-            If it is, it processes the message accordingly.
+        This function is called to check if the received message is a routing message.
+        If it is, it processes the message accordingly.
 
-            Parameters:
-            res (dict): The received message.
+        Parameters:
+        res (dict): The received message.
 
-            Returns:
-            None
-        """     
+        Returns:
+        None
+        """
         try:
             if res[self.EVENT_TYPE] == self.FORWARD_VALUE and (
                 "info" in res["forward_event"]
@@ -262,16 +268,16 @@ class LND_websocket_client:
 
     def __check_if_routing_preimage_message(self, res: dict):
         """
-            Checks if the received message is a routing preimage message.
+        Checks if the received message is a routing preimage message.
 
-            This function is called to check if the received message is a routing preimage message.
-            If it is, it processes the message accordingly.
+        This function is called to check if the received message is a routing preimage message.
+        If it is, it processes the message accordingly.
 
-            Parameters:
-            res (dict): The received message.
+        Parameters:
+        res (dict): The received message.
 
-            Returns:
-            None
+        Returns:
+        None
         """
         try:
             if res[self.EVENT_TYPE] == self.FORWARD_VALUE and (
@@ -285,16 +291,16 @@ class LND_websocket_client:
 
     def __failed_htlc_message(self, message: dict) -> None:
         """
-            Processes the failed HTLC message.
+        Processes the failed HTLC message.
 
-            This function is called to process the failed HTLC message.
-            It extracts relevant information from the message and saves it to the database.
+        This function is called to process the failed HTLC message.
+        It extracts relevant information from the message and saves it to the database.
 
-            Parameters:
-            message (dict): The failed HTLC message.
+        Parameters:
+        message (dict): The failed HTLC message.
 
-            Returns:
-            None
+        Returns:
+        None
         """
         time = int(int(message["timestamp_ns"]) / (1000000000))
         res_dict = {
@@ -317,17 +323,17 @@ class LND_websocket_client:
 
     def __check_good_forward(self, message: dict) -> None:
         """
-                Checks if the received message is a good forward event.
+        Checks if the received message is a good forward event.
 
-                This function is called to check if the received message is a good forward event.
-                If it is, it extracts relevant information from the message and saves it to the database.
+        This function is called to check if the received message is a good forward event.
+        If it is, it extracts relevant information from the message and saves it to the database.
 
-                Parameters:
-                message (dict): The received message.
+        Parameters:
+        message (dict): The received message.
 
-                Returns:
-                None
-        """  
+        Returns:
+        None
+        """
         incoming_amt_msat = int(message["forward_event"]["info"]["incoming_amt_msat"])
         outgoing_amt_msat = int(message["forward_event"]["info"]["outgoing_amt_msat"])
         routing_fee_msat = incoming_amt_msat - outgoing_amt_msat
@@ -374,16 +380,16 @@ class LND_websocket_client:
 
     def __check_good_settling(self, message: dict) -> None:
         """
-                Checks if the received message is a good settling event.
+        Checks if the received message is a good settling event.
 
-                This function is called to check if the received message is a good settling event.
-                If it is, it extracts relevant information from the message and saves it to the database.
+        This function is called to check if the received message is a good settling event.
+        If it is, it extracts relevant information from the message and saves it to the database.
 
-                Parameters:
-                message (dict): The received message.
+        Parameters:
+        message (dict): The received message.
 
-                Returns:
-                None
+        Returns:
+        None
         """
         incoming_channel_id = int(message["incoming_channel_id"])
         outgoing_channel_id = int(message["outgoing_channel_id"])
@@ -417,18 +423,18 @@ class LND_websocket_client:
 
     def __channel_in_db(self, channel_id: int) -> None:
         """
-                Checks if the channel is already in the database.
+        Checks if the channel is already in the database.
 
-                This function is called to check if the channel with the given channel ID is already present in the database.
-                If it is not, it retrieves the nodes in the channel from the LND API and saves the channel information to the database.
+        This function is called to check if the channel with the given channel ID is already present in the database.
+        If it is not, it retrieves the nodes in the channel from the LND API and saves the channel information to the database.
 
-                Parameters:
-                channel_id (int): The channel ID to check.
+        Parameters:
+        channel_id (int): The channel ID to check.
 
-                Returns:
-                None
+        Returns:
+        None
         """
-        
+
         if not self.db.is_channel_in_db(channel_id):
             response = self.lnd_api.get_nodes_in_channel(str(channel_id))
             alias = response[0]

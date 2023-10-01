@@ -15,16 +15,16 @@ class LND_api:
         base_url: str,
         macaroon: str,
         cert_path: str,
-        validate_cert: bool,
+        verify_cert: bool,
         logger: Logger,
     ) -> None:
         self.base_url = base_url
         self.macaroon = macaroon
         self.cert_path = cert_path
-        self.validate_cert = validate_cert
+        self.validate_cert = verify_cert
         self.headers = headers = {"Grpc-Metadata-macaroon": self.macaroon}
         self.logger = logger
-        if validate_cert == False:
+        if self.validate_cert == False:
             self.cert_path = False
         self.__get_basic_info()
 

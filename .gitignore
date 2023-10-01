@@ -111,3 +111,5 @@ lnd.cert
 
 test-localy.sh
 .env*
+
+test-localy-mock-mode.sh

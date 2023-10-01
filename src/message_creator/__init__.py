@@ -99,6 +99,15 @@ class Message_creator:
         message += "{}\n".format(self.__fee_yesterday())
         return message
 
+    def reouting_htlc(self, response_dict: dict) -> str:
+        message = "New routing:\n"        
+        message += "Source channel: {},\nDestination channel: {},\nFee {} sats,\nAmount out: {} sats".format(
+            response_dict["incoming_alias"],
+            response_dict["outgoing_alias"],
+            self.__sats_format(int(response_dict["routing_fee_sat"])),
+            self.__sats_format(int(response_dict["outgoing_amt_sats"])))
+        return message
+    
     def __str__(self) -> str:
         message = self.initial_info()
         message += self.balance()
@@ -115,25 +124,3 @@ class Message_creator:
 
     def __sats_format(self, value: int) -> str:
         return "{:,d}".format(value).replace(",", " ")
-
-    #     response, b = api.routing_yesterday()
-
-
-#     _, a = api.routing_all()
-#     text = api.convert_response_routing_to_text(response)
-#     message = "Date: " + date.today().strftime("%Y-%m-%d") + "\n"
-#     message += "Active channels: " + str(api.get_num_active_channels()) + "\n"
-#     message += "Inactive channels: " + str(api.get_num_passive_channels()) + "\n"
-#     message += "--------------------------\n"
-#     message += "Summary all time:\n"
-#     message += "--------------------------\n"
-#     message += api.convert_sum_to_text(a) + "\n"
-#     message += "--------------------------\n"
-#     message += "Summary yersterday:\n"
-#     message += "--------------------------\n"
-#     message += api.convert_sum_to_text(b) + "\n\n"
-#     message += text
-
-#     print(message)
-#     content_list = api.routing_yesterday_get_all_as_dict()
-#     db.write_tx_to_db(content_list)

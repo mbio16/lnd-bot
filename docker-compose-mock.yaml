@@ -1,19 +1,19 @@
 version: "3.9"
 services:
-  lnd_rest_client:
-    build:
-      context: .
-      dockerfile: DockerfileRestClient
-    container_name: lnd_rest_client
-    image: mbio16/lnd_rest_client-image 
-    volumes:
-      - .env_mock:/app/.env:ro
-      - ./certificate:/app/certificate:ro
-    networks: 
-      - backend
-    depends_on:
-      - "postgres"
-      - "signal-client"
+  # lnd_rest_client:
+  #   build:
+  #     context: .
+  #     dockerfile: DockerfileRestClient
+  #   container_name: lnd_rest_client
+  #   image: mbio16/lnd_rest_client-image 
+  #   volumes:
+  #     - .env_mock:/app/.env:ro
+  #     - ./certificate:/app/certificate:ro
+  #   networks: 
+  #     - backend
+  #   depends_on:
+  #     - "postgres"
+  #     - "signal-client"
       
   lnd_websocket_client:
     build:

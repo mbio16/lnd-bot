@@ -5,6 +5,7 @@ from db import DB
 from logger import Logger
 from lnd_api import LND_api
 from message_creator import Message_creator
+from signal_cli import Signal_client
 import websocket
 from datetime import datetime
 import os
@@ -20,7 +21,7 @@ class LND_websocket_client:
     INFO="info"
     FORWARD_VALUE="FORWARD"
     TEMPORARY_CHANNEL_FAILURE="TEMPORARY_CHANNEL_FAILURE"
-    def __init__(self,base_url:str,db: DB, cert_path: str, macaroon: str, lnd_api:LND_api,logger: Logger,verify_cert:bool,send_routing_message:bool) -> None:
+    def __init__(self,base_url:str,db: DB, cert_path: str, macaroon: str, lnd_api:LND_api,logger: Logger,verify_cert:bool,send_routing_message:bool,signal_client:Signal_client | None = None, message_creator: Message_creator | None =None) -> None:
         self.base_url = base_url.replace("https","wss")
         self.macaroon = macaroon
         self.cert_path = cert_path
@@ -31,7 +32,8 @@ class LND_websocket_client:
         self.ssl_context = None
         self.send_routing_message = send_routing_message
         self.verify_cert = verify_cert
-        self.message_creator=Message_creator(db=self.db,logger=self.logger,lnd_api=self.lnd_api)
+        self.message_creator=message_creator
+        self.signal_client = signal_client
         self.ssl_opt = self.__setup_ssl_context()
         websocket.enableTrace(True)
 
@@ -162,13 +164,18 @@ class LND_websocket_client:
             outgoing_htlc_id=outgoing_htlc_id
         )
         if self.send_routing_message:
-            pass
+            self.logger.info("Sending routing info to singal client")
+            response_dict = self.db.get_htlc_routing_confirmed(
+                incoming_htlc_id=incoming_htlc_id, 
+                outgoing_htlc_id=outgoing_htlc_id, 
+                incoming_channel_id=incoming_channel_id, 
+                outgoing_channel_id=outgoing_channel_id
+            )
+            self.logger.debug("DB response: {}".format(str(response_dict)))
+            text_response = self.message_creator.reouting_htlc(response_dict)
+            self.signal_client.send_string(text_response)
             
-        
 
-
-        
-        
     
     def __channel_in_db(self,channel_id:int)->None:
         if not self.db.is_channel_in_db(channel_id):

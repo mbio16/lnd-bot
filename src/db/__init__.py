@@ -475,4 +475,25 @@ class DB:
         self.cursor.execute(query, values)
         self.conn.commit()
         
-    
+    def get_htlc_routing_confirmed(self, incoming_htlc_id: int, outgoing_htlc_id: int, incoming_channel_id: int, outgoing_channel_id: int) -> list:
+        query = """
+            SELECT 
+                incoming_alias,
+                outgoing_alias,
+                routing_fee_msat,
+                incoming_amt_sats,
+                outgoing_amt_sats
+            FROM public.channels_htlc_events
+            WHERE incoming_htlc_id = %s AND outgoing_htlc_id = %s AND incoming_channel_id = %s AND outgoing_channel_id = %s AND confirmed = true;
+            """
+        values = (incoming_htlc_id, outgoing_htlc_id, incoming_channel_id, outgoing_channel_id)
+        self.cursor.execute(query, values)
+        response = self.cursor.fetchone()
+        return {
+            "incoming_alias": response[0],
+            "outgoing_alias": response[1],
+            "routing_fee_msat": response[2],
+            "incoming_amt_sats": response[3],
+            "outgoing_amt_sats": response[4],
+            "routing_fee_sat": float(response[2])/self.MSATS_TO_SATS
+        }
